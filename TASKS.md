@@ -10,6 +10,79 @@ Track implementation progress by checking off completed tasks.
 
 ---
 
+## Development Practices
+
+**IMPORTANT**: Follow these practices after completing each task to maintain code quality.
+
+### After Every Code Change
+
+Run these commands and ensure they pass before considering a task complete:
+
+```bash
+# 1. Lint check
+uv run ruff check .
+
+# 2. Format check
+uv run ruff format --check .
+
+# 3. Type check
+uv run ty check src/
+
+# 4. Run tests
+uv run pytest -v
+
+# Or run all at once via build.sh (stops on first failure):
+./build.sh
+```
+
+### Quality Gates Checklist
+
+Before marking any task as `[x]` Completed:
+
+- [ ] Code passes `uv run ruff check .` (no lint errors)
+- [ ] Code passes `uv run ruff format --check .` (properly formatted)
+- [ ] Code passes `uv run ty check src/` (no type errors)
+- [ ] All tests pass `uv run pytest -v`
+- [ ] New code has corresponding tests
+- [ ] `./build.sh` completes successfully
+
+### Quick Fix Commands
+
+```bash
+# Auto-fix lint issues
+uv run ruff check . --fix
+
+# Auto-format code
+uv run ruff format .
+
+# Run specific test file
+uv run pytest tests/test_heuristics/test_account_age.py -v
+
+# Run tests with coverage
+uv run pytest -v --cov=src/pr_slop_stopper
+```
+
+### Development Workflow
+
+1. **Start task** - Mark as `[~]` in progress
+2. **Write code** - Implement the feature
+3. **Write tests** - Add unit tests for new code
+4. **Run checks** - Execute all quality gates
+5. **Fix issues** - Address any failures
+6. **Verify** - Run `./build.sh` end-to-end
+7. **Complete** - Mark as `[x]` only when all checks pass
+
+### Test-Driven Development (Recommended)
+
+For heuristics and core logic:
+1. Write test first (expected behavior)
+2. Run test (should fail)
+3. Implement code
+4. Run test (should pass)
+5. Run all checks
+
+---
+
 ## 1. Human Tasks (Manual Steps)
 
 These tasks require manual action outside of code.
