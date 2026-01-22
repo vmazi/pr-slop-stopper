@@ -353,13 +353,149 @@ POST /api/webhook/github
 
 Receives GitHub webhook events. Validates signature using webhook secret.
 
-**Flow**:
+**Important**: GitHub expects webhook responses within 10 seconds. To prevent timeouts, we use [FastAPI BackgroundTasks](https://fastapi.tiangolo.com/tutorial/background-tasks/) to process the scoring asynchronously after returning an immediate `202 Accepted` response.
+
+**Synchronous Flow** (must complete quickly):
 1. Validate webhook signature
-2. Parse `pull_request.opened` event
-3. Check if PR author should be analyzed
-4. Fetch/calculate reputation score
-5. Take action based on thresholds
-6. Log result
+2. Parse event type
+3. Return `202 Accepted` immediately
+4. Queue scoring task in background
+
+**Background Task Flow** (runs after response):
+1. Check if PR author should be analyzed
+2. Fetch/calculate reputation score
+3. Take action based on thresholds
+4. Log result
+
+#### Webhook Handler Implementation
+
+```python
+from fastapi import APIRouter, BackgroundTasks, Request, HTTPException
+from fastapi.responses import JSONResponse
+import hmac
+import hashlib
+import structlog
+
+router = APIRouter()
+logger = structlog.get_logger()
+
+
+def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+    """Verify GitHub webhook signature."""
+    expected = "sha256=" + hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+
+async def process_pr_opened(
+    installation_id: int,
+    repo_full_name: str,
+    pr_number: int,
+    pr_author: str,
+):
+    """
+    Background task to process a PR opened event.
+
+    This runs AFTER the webhook response is sent to GitHub.
+    """
+    logger.info(
+        "processing_pr",
+        repo=repo_full_name,
+        pr=pr_number,
+        author=pr_author,
+    )
+
+    try:
+        # 1. Check skip conditions (maintainer, whitelisted, etc.)
+        # 2. Get or calculate user reputation score
+        # 3. Apply labels/comments based on thresholds
+        # 4. Log the result
+        pass
+    except Exception as e:
+        logger.error(
+            "pr_processing_failed",
+            repo=repo_full_name,
+            pr=pr_number,
+            error=str(e),
+        )
+
+
+@router.post("/webhook/github")
+async def github_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+):
+    """
+    Handle GitHub webhook events.
+
+    Returns 202 Accepted immediately, processes in background.
+    """
+    # Get raw body for signature verification
+    body = await request.body()
+
+    # Verify signature
+    signature = request.headers.get("X-Hub-Signature-256", "")
+    if not verify_webhook_signature(body, signature, settings.webhook_secret):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    # Parse payload
+    payload = await request.json()
+    event_type = request.headers.get("X-GitHub-Event")
+
+    # Only process pull_request.opened events
+    if event_type != "pull_request":
+        return JSONResponse(
+            status_code=200,
+            content={"status": "ignored", "reason": "not a PR event"}
+        )
+
+    action = payload.get("action")
+    if action != "opened":
+        return JSONResponse(
+            status_code=200,
+            content={"status": "ignored", "reason": f"action={action}"}
+        )
+
+    # Extract PR details
+    installation_id = payload["installation"]["id"]
+    repo_full_name = payload["repository"]["full_name"]
+    pr_number = payload["pull_request"]["number"]
+    pr_author = payload["pull_request"]["user"]["login"]
+
+    # Queue background task - this runs AFTER response is sent
+    background_tasks.add_task(
+        process_pr_opened,
+        installation_id=installation_id,
+        repo_full_name=repo_full_name,
+        pr_number=pr_number,
+        pr_author=pr_author,
+    )
+
+    # Return immediately - GitHub gets fast response
+    return JSONResponse(
+        status_code=202,
+        content={
+            "status": "accepted",
+            "message": "PR analysis queued",
+            "pr": f"{repo_full_name}#{pr_number}",
+        }
+    )
+```
+
+#### When to Use BackgroundTasks vs. Celery
+
+| Use Case | Solution |
+|----------|----------|
+| Simple webhook processing | FastAPI `BackgroundTasks` |
+| Email notifications | FastAPI `BackgroundTasks` |
+| Heavy computation (ML scoring) | Celery + Redis |
+| High-volume processing | Celery + Redis |
+| Distributed workers | Celery + Redis |
+
+For v1, `BackgroundTasks` is sufficient. If we need to scale to high volumes or add ML-based scoring, we should migrate to Celery.
 
 ### Health Endpoints
 
