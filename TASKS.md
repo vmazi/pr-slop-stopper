@@ -121,21 +121,21 @@ These tasks require manual action outside of code.
 
 ### Directory Structure
 
-- [ ] Create `src/pr_slop_stopper/` package directory
-- [ ] Create `src/pr_slop_stopper/__init__.py`
-- [ ] Create `src/pr_slop_stopper/main.py` (FastAPI app)
-- [ ] Create `src/pr_slop_stopper/config.py` (Pydantic settings)
-- [ ] Create subpackage directories:
-  - [ ] `src/pr_slop_stopper/api/`
-  - [ ] `src/pr_slop_stopper/core/`
-  - [ ] `src/pr_slop_stopper/core/heuristics/`
-  - [ ] `src/pr_slop_stopper/github/`
-  - [ ] `src/pr_slop_stopper/actions/`
-- [ ] Create `tests/` directory structure
+- [x] Create `src/pr_slop_stopper/` package directory
+- [x] Create `src/pr_slop_stopper/__init__.py`
+- [x] Create `src/pr_slop_stopper/main.py` (FastAPI app)
+- [x] Create `src/pr_slop_stopper/config.py` (Pydantic settings)
+- [x] Create subpackage directories:
+  - [x] `src/pr_slop_stopper/api/`
+  - [x] `src/pr_slop_stopper/core/`
+  - [x] `src/pr_slop_stopper/core/heuristics/`
+  - [x] `src/pr_slop_stopper/github/`
+  - [x] `src/pr_slop_stopper/actions/`
+- [x] Create `tests/` directory structure
 
 ### Configuration Files
 
-- [ ] Update `pyproject.toml` with entry points
+- [x] Update `pyproject.toml` with entry points
 - [ ] Create `Containerfile` for production image
 - [ ] Create `podman-compose.yml` for deployment
 - [ ] Create `.env.example` with all required env vars
@@ -146,16 +146,16 @@ These tasks require manual action outside of code.
 
 ### Setup
 
-- [ ] Create `src/pr_slop_stopper/github/auth.py`
-  - [ ] `GithubAppAuth` class for JWT generation
-  - [ ] `get_installation_client(installation_id)` function
-- [ ] Create `src/pr_slop_stopper/github/client.py`
-  - [ ] Wrapper around PyGithub with error handling
+- [x] Create `src/pr_slop_stopper/github/auth.py`
+  - [x] `GithubAppAuth` class for JWT generation
+  - [x] `get_installation_client(installation_id)` function
+- [x] Create `src/pr_slop_stopper/github/client.py`
+  - [x] Wrapper around PyGithub with error handling
   - [ ] Rate limit handling and backoff
-- [ ] Create `src/pr_slop_stopper/github/models.py`
-  - [ ] Pydantic models for webhook payloads
-  - [ ] `PROpenedEvent` model
-  - [ ] `UserProfile` model
+- [x] Create `src/pr_slop_stopper/github/models.py`
+  - [x] Pydantic models for webhook payloads
+  - [x] `PROpenedEvent` model
+  - [x] `UserProfile` model
 
 ### Tests
 
@@ -173,39 +173,39 @@ Each heuristic needs:
 
 ### Base Infrastructure
 
-- [ ] Create `src/pr_slop_stopper/core/heuristics/base.py`
-  - [ ] `HeuristicResult` dataclass (score, breakdown, details)
-  - [ ] `BaseHeuristic` abstract class
-  - [ ] `HeuristicRegistry` for managing all heuristics
+- [x] Create `src/pr_slop_stopper/core/heuristics/base.py`
+  - [x] `HeuristicResult` dataclass (score, breakdown, details)
+  - [x] `BaseHeuristic` abstract class
+  - [x] `HeuristicRegistry` for managing all heuristics
 
 ### Tier 1: Simple (Profile Data Only - 1 API call)
 
 #### 4.1 Account Age
-- [ ] Create `src/pr_slop_stopper/core/heuristics/account_age.py`
-  - [ ] Calculate age from `user.created_at`
-  - [ ] Apply tier scoring (-20 to +15)
-- [ ] Create `tests/test_heuristics/test_account_age.py`
-  - [ ] Test all age tiers
-  - [ ] Test boundary conditions
+- [x] Create `src/pr_slop_stopper/core/heuristics/account_age.py`
+  - [x] Calculate age from `user.created_at`
+  - [x] Apply tier scoring (-20 to +15)
+- [x] Create `tests/test_heuristics/test_account_age.py`
+  - [x] Test all age tiers
+  - [x] Test boundary conditions
 
 #### 4.2 Profile Completeness
-- [ ] Create `src/pr_slop_stopper/core/heuristics/profile_completeness.py`
-  - [ ] Check avatar_url, bio, company, location, blog, twitter
-  - [ ] LinkedIn detection in blog URL
-  - [ ] Apply scoring (+23 to -10)
-- [ ] Create `tests/test_heuristics/test_profile_completeness.py`
-  - [ ] Test complete profile
-  - [ ] Test empty profile
-  - [ ] Test LinkedIn matching
+- [x] Create `src/pr_slop_stopper/core/heuristics/profile_completeness.py`
+  - [x] Check avatar_url, bio, company, location, blog, twitter
+  - [x] LinkedIn detection in blog URL
+  - [x] Apply scoring (+23 to -10)
+- [x] Create `tests/test_heuristics/test_profile_completeness.py`
+  - [x] Test complete profile
+  - [x] Test empty profile
+  - [x] Test LinkedIn matching
 
 #### 4.3 Follower Patterns
-- [ ] Create `src/pr_slop_stopper/core/heuristics/follower_patterns.py`
-  - [ ] Check followers/following counts
-  - [ ] Detect follow-spam pattern (high following, low followers)
-  - [ ] Apply scoring (+8 to -10)
-- [ ] Create `tests/test_heuristics/test_follower_patterns.py`
-  - [ ] Test follower tiers
-  - [ ] Test spam detection
+- [x] Create `src/pr_slop_stopper/core/heuristics/follower_patterns.py`
+  - [x] Check followers/following counts
+  - [x] Detect follow-spam pattern (high following, low followers)
+  - [x] Apply scoring (+8 to -10)
+- [x] Create `tests/test_heuristics/test_follower_patterns.py`
+  - [x] Test follower tiers
+  - [x] Test spam detection
 
 ### Tier 2: Moderate (Search API Required)
 
@@ -270,22 +270,22 @@ Each heuristic needs:
 
 ### Implementation
 
-- [ ] Create `src/pr_slop_stopper/core/scorer.py`
-  - [ ] `ReputationScorer` class
-  - [ ] `calculate_score(user, pr_context)` method
-  - [ ] Aggregate all heuristic results
-  - [ ] Clamp final score to [-100, +100]
-  - [ ] Return detailed breakdown
-- [ ] Create `src/pr_slop_stopper/core/models.py`
-  - [ ] `ScoringResult` dataclass
-  - [ ] `ScoringConfig` from repo config
+- [x] Create `src/pr_slop_stopper/core/scorer.py`
+  - [x] `ReputationScorer` class
+  - [x] `calculate_score(user, pr_context)` method
+  - [x] Aggregate all heuristic results
+  - [x] Clamp final score to [-100, +100]
+  - [x] Return detailed breakdown
+- [x] Create `src/pr_slop_stopper/core/models.py`
+  - [x] `ScoringResult` dataclass
+  - [x] `ScoringConfig` from repo config
 
 ### Tests
 
-- [ ] Create `tests/test_core/test_scorer.py`
-  - [ ] Test score aggregation
-  - [ ] Test clamping
-  - [ ] Test with subset of heuristics enabled
+- [x] Create `tests/test_core/test_scorer.py`
+  - [x] Test score aggregation
+  - [x] Test clamping
+  - [x] Test with subset of heuristics enabled
 
 ---
 
@@ -293,30 +293,30 @@ Each heuristic needs:
 
 ### Implementation
 
-- [ ] Create `src/pr_slop_stopper/api/webhook.py`
-  - [ ] `POST /api/webhook/github` endpoint
-  - [ ] Signature verification (X-Hub-Signature-256)
-  - [ ] Parse `pull_request.opened` events
-  - [ ] Background task for scoring (FastAPI BackgroundTasks)
-  - [ ] Return 202 Accepted immediately
-- [ ] Create `src/pr_slop_stopper/api/health.py`
-  - [ ] `GET /health` endpoint
-  - [ ] `GET /health/ready` endpoint
+- [x] Create `src/pr_slop_stopper/api/webhook.py`
+  - [x] `POST /api/webhook/github` endpoint
+  - [x] Signature verification (X-Hub-Signature-256)
+  - [x] Parse `pull_request.opened` events
+  - [x] Background task for scoring (FastAPI BackgroundTasks)
+  - [x] Return 202 Accepted immediately
+- [x] Create `src/pr_slop_stopper/api/health.py`
+  - [x] `GET /health` endpoint
+  - [x] `GET /health/ready` endpoint
 
 ### Skip Logic
 
-- [ ] Implement skip conditions:
-  - [ ] User is repo collaborator/maintainer
-  - [ ] User has previously merged PR to this repo
-  - [ ] User is in whitelist (from repo config)
+- [x] Implement skip conditions:
+  - [x] User is repo collaborator/maintainer
+  - [x] User has previously merged PR to this repo
+  - [x] User is in whitelist (from repo config)
 
 ### Tests
 
-- [ ] Create `tests/test_api/test_webhook.py`
-  - [ ] Test signature validation
-  - [ ] Test event parsing
+- [x] Create `tests/test_api/test_webhook.py`
+  - [x] Test signature validation
+  - [x] Test event parsing
   - [ ] Test skip conditions
-- [ ] Create `tests/test_api/test_health.py`
+- [x] Create `tests/test_api/test_health.py`
 
 ---
 
@@ -324,31 +324,31 @@ Each heuristic needs:
 
 ### Implementation
 
-- [ ] Create `src/pr_slop_stopper/actions/labeler.py`
-  - [ ] Create labels if they don't exist
-  - [ ] `pr-slop-stopper: warning` label
-  - [ ] `pr-slop-stopper: likely-spam` label
-  - [ ] Apply label to PR
-- [ ] Create `src/pr_slop_stopper/actions/commenter.py`
-  - [ ] Generate comment with score breakdown
-  - [ ] Include which heuristics contributed
-  - [ ] Add link to documentation
-  - [ ] Post comment to PR
-- [ ] Create `src/pr_slop_stopper/actions/closer.py`
-  - [ ] Close PR (for spam threshold)
+- [x] Create `src/pr_slop_stopper/actions/labeler.py`
+  - [x] Create labels if they don't exist
+  - [x] `pr-slop-stopper: warning` label
+  - [x] `pr-slop-stopper: likely-spam` label
+  - [x] Apply label to PR
+- [x] Create `src/pr_slop_stopper/actions/commenter.py`
+  - [x] Generate comment with score breakdown
+  - [x] Include which heuristics contributed
+  - [x] Add link to documentation
+  - [x] Post comment to PR
+- [x] Create `src/pr_slop_stopper/actions/closer.py`
+  - [x] Close PR (for spam threshold)
 
 ### Action Orchestration
 
-- [ ] Create `src/pr_slop_stopper/actions/executor.py`
-  - [ ] `execute_action(score, config, pr)` function
-  - [ ] Determine action based on thresholds
-  - [ ] Execute label + comment + optional close
+- [x] Create `src/pr_slop_stopper/actions/executor.py`
+  - [x] `execute_action(score, config, pr)` function
+  - [x] Determine action based on thresholds
+  - [x] Execute label + comment + optional close
 
 ### Tests
 
 - [ ] Create `tests/test_actions/test_labeler.py`
-- [ ] Create `tests/test_actions/test_commenter.py`
-- [ ] Create `tests/test_actions/test_executor.py`
+- [x] Create `tests/test_actions/test_commenter.py`
+- [x] Create `tests/test_actions/test_executor.py`
 
 ---
 
@@ -356,22 +356,22 @@ Each heuristic needs:
 
 ### Repo Config Loading
 
-- [ ] Create `src/pr_slop_stopper/config.py`
-  - [ ] `Settings` class (Pydantic BaseSettings)
-  - [ ] Load from environment variables
-- [ ] Create `src/pr_slop_stopper/core/repo_config.py`
-  - [ ] `RepoConfig` model for `.github/pr-slop-stopper.yml`
-  - [ ] Default thresholds (warn: -10, close: -40)
-  - [ ] Whitelist parsing
-  - [ ] Heuristic enable/disable flags
-  - [ ] Fetch config from repo via GitHub API
+- [x] Create `src/pr_slop_stopper/config.py`
+  - [x] `Settings` class (Pydantic BaseSettings)
+  - [x] Load from environment variables
+- [x] Create `src/pr_slop_stopper/core/repo_config.py`
+  - [x] `RepoConfig` model for `.github/pr-slop-stopper.yml`
+  - [x] Default thresholds (warn: -10, close: -40)
+  - [x] Whitelist parsing
+  - [x] Heuristic enable/disable flags
+  - [x] Fetch config from repo via GitHub API
 
 ### Tests
 
-- [ ] Create `tests/test_config.py`
-  - [ ] Test default values
-  - [ ] Test config parsing
-  - [ ] Test invalid config handling
+- [x] Create `tests/test_config.py`
+  - [x] Test default values
+  - [x] Test config parsing
+  - [x] Test invalid config handling
 
 ---
 
@@ -379,24 +379,24 @@ Each heuristic needs:
 
 ### pytest Setup
 
-- [ ] Configure `pyproject.toml` pytest settings
-- [ ] Create `tests/conftest.py`
-  - [ ] Mock GitHub client fixture
-  - [ ] Sample user data fixtures
-  - [ ] Sample PR event fixtures
+- [x] Configure `pyproject.toml` pytest settings
+- [x] Create `tests/conftest.py`
+  - [x] Mock GitHub client fixture
+  - [x] Sample user data fixtures
+  - [x] Sample PR event fixtures
 
 ### Integration Tests
 
-- [ ] Create `tests/integration/test_full_flow.py`
-  - [ ] Test complete webhook → score → action flow
-  - [ ] Mock GitHub API responses
+- [x] Create `tests/integration/test_full_flow.py`
+  - [x] Test complete webhook → score → action flow
+  - [x] Mock GitHub API responses
 
 ### Test Data
 
-- [ ] Create `tests/fixtures/` directory
-  - [ ] Sample webhook payloads
-  - [ ] Sample user profiles (good, suspicious, spam)
-  - [ ] Sample PR data
+- [x] Create `tests/fixtures/` directory
+  - [x] Sample webhook payloads
+  - [x] Sample user profiles (good, suspicious, spam)
+  - [x] Sample PR data
 
 ---
 
@@ -404,14 +404,14 @@ Each heuristic needs:
 
 ### GitHub Actions
 
-- [ ] Create `.github/workflows/ci.yml`
-  - [ ] Trigger on push and PR to main
-  - [ ] Set up Python 3.11 with uv
-  - [ ] Run `uv sync --dev`
-  - [ ] Run `uv run ruff check .`
-  - [ ] Run `uv run ruff format --check .`
-  - [ ] Run `uv run ty check src/`
-  - [ ] Run `uv run pytest -v`
+- [x] Create `.github/workflows/ci.yml`
+  - [x] Trigger on push and PR to main
+  - [x] Set up Python 3.11 with uv
+  - [x] Run `uv sync --dev`
+  - [x] Run `uv run ruff check .`
+  - [x] Run `uv run ruff format --check .`
+  - [x] Run `uv run ty check src/`
+  - [x] Run `uv run pytest -v`
 
 ---
 
@@ -419,25 +419,25 @@ Each heuristic needs:
 
 ### Container Image
 
-- [ ] Create `Containerfile`
-  - [ ] Base image: `python:3.11-slim`
-  - [ ] Install uv
-  - [ ] Copy project files
-  - [ ] Install dependencies
-  - [ ] Expose port 8000
-  - [ ] CMD: uvicorn
+- [x] Create `Containerfile`
+  - [x] Base image: `python:3.11-slim`
+  - [x] Install uv
+  - [x] Copy project files
+  - [x] Install dependencies
+  - [x] Expose port 8000
+  - [x] CMD: uvicorn
 
 ### Podman Compose
 
-- [ ] Create `podman-compose.yml`
-  - [ ] `pr-slop-stopper` service
-  - [ ] Environment variables from `.env`
-  - [ ] Health checks
-  - [ ] Port mapping
+- [x] Create `podman-compose.yml`
+  - [x] `pr-slop-stopper` service
+  - [x] Environment variables from `.env`
+  - [x] Health checks
+  - [x] Port mapping
 
 ### Deployment Files
 
-- [ ] Create `.env.example`
+- [x] Create `.env.example`
 - [ ] Create `devenv.sh` for local development
 
 ---
@@ -525,17 +525,17 @@ These tasks are deferred until needed for caching/dashboard features.
 | Category | Total | Done | Progress |
 |----------|-------|------|----------|
 | Human Tasks | 11 | 0 | 0% |
-| Project Setup | 10 | 0 | 0% |
-| GitHub Client | 6 | 0 | 0% |
-| Heuristics | 24 | 0 | 0% |
-| Scoring Engine | 4 | 0 | 0% |
-| Webhook | 7 | 0 | 0% |
-| Actions | 8 | 0 | 0% |
-| Configuration | 4 | 0 | 0% |
-| Testing | 5 | 0 | 0% |
-| CI/CD | 1 | 0 | 0% |
-| Deployment | 4 | 0 | 0% |
+| Project Setup | 10 | 8 | 80% |
+| GitHub Client | 6 | 4 | 67% |
+| Heuristics | 24 | 12 | 50% |
+| Scoring Engine | 4 | 4 | 100% |
+| Webhook | 7 | 6 | 86% |
+| Actions | 8 | 7 | 88% |
+| Configuration | 4 | 4 | 100% |
+| Testing | 5 | 5 | 100% |
+| CI/CD | 1 | 1 | 100% |
+| Deployment | 4 | 3 | 75% |
 | Documentation | 3 | 0 | 0% |
-| **Total** | **87** | **0** | **0%** |
+| **Total** | **87** | **54** | **62%** |
 
 *Database tasks (13) deferred to future phase*
