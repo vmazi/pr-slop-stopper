@@ -37,7 +37,7 @@ echo ""
 
 # Step 1: Ensure dependencies are installed
 echo ">>> Syncing dependencies..."
-uv sync --dev
+uv sync --extra dev
 echo ""
 
 # Step 2: Lint check
@@ -54,12 +54,14 @@ echo ""
 
 # Step 4: Type check
 echo ">>> Running ty type check..."
-uv run ty check src/ || echo "⚠ Type check skipped (no src/ yet)"
+uv run ty check src/
+echo "✓ Type check passed"
 echo ""
 
 # Step 5: Run tests
 echo ">>> Running tests..."
-uv run pytest -v || echo "⚠ Tests skipped (no tests yet)"
+uv run pytest -v
+echo "✓ Tests passed"
 echo ""
 
 echo ">>> All checks passed! Building container image..."
