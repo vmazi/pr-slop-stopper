@@ -112,6 +112,178 @@ async def get_installation_token(jwt_token: str, installation_id: int) -> str:
 | Container | Podman | Existing VPS infrastructure |
 | Reverse Proxy | Existing infra | TLS termination, routing |
 
+## Development Tooling
+
+| Tool | Purpose | Version |
+|------|---------|---------|
+| [uv](https://github.com/astral-sh/uv) | Dependency management | Latest |
+| [ty](https://github.com/astral-sh/ty) | Type checking | Latest |
+| [ruff](https://github.com/astral-sh/ruff) | Linting & formatting | Latest |
+
+### Project Setup
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+```
+
+### pyproject.toml Configuration
+
+```toml
+[project]
+name = "pr-slop-stopper"
+version = "0.1.0"
+description = "GitHub App to combat AI-generated spam PRs"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "PyGithub>=2.1.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "structlog>=24.1.0",
+    "python-dateutil>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ty>=0.0.1",
+    "ruff>=0.4.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty]
+python-version = "3.11"
+```
+
+### Development Commands
+
+```bash
+# Linting
+uv run ruff check .                    # Check for lint errors
+uv run ruff check . --fix              # Auto-fix lint errors
+uv run ruff format .                   # Format code
+
+# Type checking
+uv run ty check src/                   # Type check source code
+
+# Testing
+uv run pytest -v                       # Run tests
+
+# All checks (same as build.sh pre-checks)
+uv run ruff check . && uv run ruff format --check . && uv run ty check src/
+```
+
+### build.sh Script
+
+The build script ensures code quality before building the container image:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Default to podman, allow override with --runtime docker
+RUNTIME="${1:-podman}"
+if [[ "$1" == "--runtime" ]]; then
+    RUNTIME="${2:-podman}"
+fi
+
+IMAGE_NAME="pr-slop-stopper"
+IMAGE_TAG="latest"
+
+echo "=== PR Slop Stopper Build ==="
+echo "Runtime: $RUNTIME"
+echo ""
+
+# Step 1: Lint check
+echo ">>> Running ruff lint check..."
+uv run ruff check .
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Linting failed. Fix errors before building."
+    exit 1
+fi
+
+# Step 2: Format check
+echo ">>> Running ruff format check..."
+uv run ruff format --check .
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Formatting check failed. Run 'uv run ruff format .' to fix."
+    exit 1
+fi
+
+# Step 3: Type check
+echo ">>> Running ty type check..."
+uv run ty check src/
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Type check failed. Fix type errors before building."
+    exit 1
+fi
+
+# Step 4: Run tests
+echo ">>> Running tests..."
+uv run pytest -v
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Tests failed. Fix failing tests before building."
+    exit 1
+fi
+
+echo ""
+echo ">>> All checks passed! Building container image..."
+echo ""
+
+# Step 5: Build container
+$RUNTIME build -t "${IMAGE_NAME}:${IMAGE_TAG}" -f Containerfile .
+
+echo ""
+echo "=== Build complete ==="
+echo "Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+echo "Run with: $RUNTIME run -p 8000:8000 ${IMAGE_NAME}:${IMAGE_TAG}"
+```
+
+### Usage
+
+```bash
+# Build with podman (default)
+./build.sh
+
+# Build with docker
+./build.sh --runtime docker
+
+# Skip checks and build directly (not recommended)
+podman build -t pr-slop-stopper:latest -f Containerfile .
+```
+
 ## GitHub API Client (PyGithub)
 
 We use [PyGithub](https://github.com/PyGithub/PyGithub) for all GitHub API interactions. This provides a typed, Pythonic interface to the GitHub REST API.
