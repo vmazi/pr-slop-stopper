@@ -1,4 +1,4 @@
-# PR Slop Stop
+# PR Slop Stopper
 
 A GitHub App that combats AI-generated spam pull requests by analyzing contributor reputation using heuristic-based scoring.
 
@@ -12,7 +12,7 @@ Open source organizations are increasingly inundated with low-quality, LLM-gener
 
 ## The Solution
 
-PR Slop Stop analyzes the GitHub profile and activity history of PR authors to calculate a reputation score. PRs from accounts with suspicious patterns are automatically flagged or closed based on configurable thresholds.
+PR Slop Stopper analyzes the GitHub profile and activity history of PR authors to calculate a reputation score. PRs from accounts with suspicious patterns are automatically flagged or closed based on configurable thresholds.
 
 ### Key Features
 
@@ -25,7 +25,7 @@ PR Slop Stop analyzes the GitHub profile and activity history of PR authors to c
 ## Quick Start
 
 1. Install the GitHub App on your organization
-2. Configure sensitivity thresholds in `.github/pr-slop-stop.yml`
+2. Configure sensitivity thresholds in `.github/pr-slop-stopper.yml`
 3. Optionally add whitelisted users
 
 ## Documentation
@@ -36,7 +36,7 @@ PR Slop Stop analyzes the GitHub profile and activity history of PR authors to c
 
 ## Configuration
 
-Create `.github/pr-slop-stop.yml` in your repository:
+Create `.github/pr-slop-stopper.yml` in your repository:
 
 ```yaml
 # Score thresholds (scores range from -100 to +100)

@@ -1,4 +1,4 @@
-# Product Requirements Document: PR Slop Stop
+# Product Requirements Document: PR Slop Stopper
 
 ## Problem Statement
 
@@ -31,7 +31,7 @@ This manual process doesn't scale.
 
 ## Solution Overview
 
-PR Slop Stop is a GitHub App that automatically analyzes the reputation of PR authors and flags suspicious contributions before maintainers spend time reviewing them.
+PR Slop Stopper is a GitHub App that automatically analyzes the reputation of PR authors and flags suspicious contributions before maintainers spend time reviewing them.
 
 ### Core Principles
 

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-PR Slop Stop is deployed as a GitHub App with a FastAPI backend service hosted on a Podman-enabled VPS.
+PR Slop Stopper is deployed as a GitHub App with a FastAPI backend service hosted on a Podman-enabled VPS.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -16,7 +16,7 @@ PR Slop Stop is deployed as a GitHub App with a FastAPI backend service hosted o
 ┌─────────────────────────────────────────────────────────────────┐
 │                      VPS (Podman)                                │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    pr-slop-stop                           │   │
+│  │                    pr-slop-stopper                           │   │
 │  │  ┌─────────────┐   ┌──────────────┐   ┌──────────────┐   │   │
 │  │  │   FastAPI   │──▶│  Scorer      │──▶│  PostgreSQL  │   │   │
 │  │  │  (webhook)  │   │  Engine      │   │  (cache/log) │   │   │
@@ -42,7 +42,7 @@ PR Slop Stop is deployed as a GitHub App with a FastAPI backend service hosted o
 1. Go to **GitHub Settings** → **Developer settings** → **GitHub Apps** → **New GitHub App**
 
 2. **Basic Information**:
-   - App name: `PR Slop Stop`
+   - App name: `PR Slop Stopper`
    - Homepage URL: Your service URL
    - Description: Automatic spam PR detection using reputation scoring
 
@@ -114,13 +114,13 @@ async def get_installation_token(jwt_token: str, installation_id: int) -> str:
 ## Project Structure
 
 ```
-pr-slop-stop/
+pr-slop-stopper/
 ├── docs/
 │   ├── PRD.md
 │   ├── HEURISTICS.md
 │   └── ARCHITECTURE.md
 ├── src/
-│   └── pr_slop_stop/
+│   └── pr_slop_stopper/
 │       ├── __init__.py
 │       ├── main.py              # FastAPI app entry point
 │       ├── config.py            # Settings management
@@ -140,8 +140,7 @@ pr-slop-stop/
 │       │       ├── notable_oss.py
 │       │       ├── activity.py
 │       │       ├── followers.py
-│       │       ├── contribution_type.py
-│       │       └── maintainer_feedback.py
+│       │       └── contribution_type.py
 │       ├── github/
 │       │   ├── __init__.py
 │       │   ├── client.py        # GitHub API client
@@ -342,7 +341,7 @@ POST /api/installations/:id/whitelist  # Add to whitelist
 
 ## Configuration Management
 
-Repository configuration is read from `.github/pr-slop-stop.yml`:
+Repository configuration is read from `.github/pr-slop-stopper.yml`:
 
 ```python
 from pydantic import BaseModel
@@ -360,7 +359,6 @@ class HeuristicConfig(BaseModel):
     activity_patterns: bool = True
     follower_patterns: bool = True
     contribution_type: bool = True
-    maintainer_feedback: bool = True
 
 class RepoConfig(BaseModel):
     thresholds: Thresholds = Thresholds()
@@ -386,7 +384,7 @@ COPY alembic.ini ./
 
 EXPOSE 8000
 
-CMD ["uvicorn", "pr_slop_stop.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "pr_slop_stopper.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Environment Variables
@@ -398,7 +396,7 @@ GITHUB_PRIVATE_KEY_PATH=/secrets/github-app.pem
 GITHUB_WEBHOOK_SECRET=your-webhook-secret
 
 # Database
-DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/pr_slop_stop
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/pr_slop_stopper
 
 # Optional
 LOG_LEVEL=INFO
@@ -411,12 +409,12 @@ SCORE_CACHE_TTL_HOURS=24
 version: "3.8"
 
 services:
-  pr-slop-stop:
+  pr-slop-stopper:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://prss:prss@db:5432/pr_slop_stop
+      - DATABASE_URL=postgresql+asyncpg://prss:prss@db:5432/pr_slop_stopper
       - GITHUB_APP_ID=${GITHUB_APP_ID}
       - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
     volumes:
@@ -429,7 +427,7 @@ services:
     environment:
       - POSTGRES_USER=prss
       - POSTGRES_PASSWORD=prss
-      - POSTGRES_DB=pr_slop_stop
+      - POSTGRES_DB=pr_slop_stopper
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -502,10 +500,10 @@ logger.info(
 ### Metrics (Future)
 
 Expose Prometheus metrics:
-- `pr_slop_stop_prs_analyzed_total`
-- `pr_slop_stop_prs_flagged_total{action="warn|close"}`
-- `pr_slop_stop_score_calculation_seconds`
-- `pr_slop_stop_github_api_requests_total`
+- `pr_slop_stopper_prs_analyzed_total`
+- `pr_slop_stopper_prs_flagged_total{action="warn|close"}`
+- `pr_slop_stopper_score_calculation_seconds`
+- `pr_slop_stopper_github_api_requests_total`
 
 ## Future Enhancements
 

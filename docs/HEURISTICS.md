@@ -1,6 +1,6 @@
 # Heuristics Guide
 
-This document details all reputation heuristics used by PR Slop Stop, including scoring weights and rationale.
+This document details all reputation heuristics used by PR Slop Stopper, including scoring weights and rationale.
 
 ## Scoring Philosophy
 
@@ -127,16 +127,6 @@ Certain contribution patterns are common among spam PRs.
 | **PRs exclusively touching docs/typos (5+)** | -12 | Common spam pattern |
 | **Multiple PRs with identical patterns** | -10 | Automated submission |
 
-### 8. Maintainer Feedback Signals
-
-If maintainers have previously flagged this user's PRs as spam, that's highly informative.
-
-| Signal | Score | Rationale |
-|--------|-------|-----------|
-| **3+ PRs closed with "spam" label** | -30 | Community consensus |
-| **3+ PRs closed with comments like "AI generated", "LLM", "GPT"** | -25 | Explicit spam identification |
-| **Blocked by any repo in this org** | -20 | Org-level trust broken |
-
 ## Heuristic Weights Summary
 
 | Category | Max Positive | Max Negative |
@@ -148,10 +138,9 @@ If maintainers have previously flagged this user's PRs as spam, that's highly in
 | Activity Patterns | +15 | -43 |
 | Follower Patterns | +8 | -10 |
 | Contribution Type Patterns | +5 | -22 |
-| Maintainer Feedback | 0 | -30 |
 
 **Theoretical Maximum**: +106 (capped to +100)
-**Theoretical Minimum**: -160 (capped to -100)
+**Theoretical Minimum**: -130 (capped to -100)
 
 ## Default Thresholds
 
@@ -165,8 +154,20 @@ If maintainers have previously flagged this user's PRs as spam, that's highly in
 
 These require more advanced analysis and are planned for future versions:
 
-- **PR description analysis** - LLM-based quality assessment
+### Maintainer Feedback Signals
+Deferred due to API complexity - requires scanning PR comments across user's history which is rate-limit intensive.
+
+| Signal | Proposed Score | Rationale |
+|--------|----------------|-----------|
+| 3+ PRs closed with "spam" label | -30 | Community consensus |
+| 3+ PRs closed with comments containing "AI generated", "LLM", "GPT" | -25 | Explicit spam identification |
+| Blocked by any repo in this org | -20 | Org-level trust broken |
+
+### LLM-Based Analysis
+- **PR description analysis** - Quality assessment, template detection
 - **Code change semantic analysis** - Does the code match the stated purpose?
+
+### Other Future Signals
 - **Cross-reference with known spam databases**
 - **Behavioral fingerprinting** - Timing patterns, commit message styles
 
