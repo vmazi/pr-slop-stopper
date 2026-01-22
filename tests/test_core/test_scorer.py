@@ -173,11 +173,19 @@ class TestReputationScorer:
 
         result = self.scorer.calculate_score(user, reference_date=self.reference_date)
 
-        assert len(result.heuristic_results) == 3
+        # We have 8 heuristics now (original 3 + 5 new complex ones)
+        assert len(result.heuristic_results) == 8
         names = [r.name for r in result.heuristic_results]
+        # Original heuristics
         assert "account_age" in names
         assert "follower_patterns" in names
         assert "profile_completeness" in names
+        # New complex heuristics
+        assert "pr_acceptance_rate" in names
+        assert "contribution_type" in names
+        assert "activity_patterns" in names
+        assert "notable_contributions" in names
+        assert "fork_timing" in names
 
     def test_total_score_is_sum(self) -> None:
         """Test that total score is sum of all heuristic scores."""

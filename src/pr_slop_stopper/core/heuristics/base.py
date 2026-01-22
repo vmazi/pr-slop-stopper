@@ -7,7 +7,7 @@ from datetime import datetime
 from pr_slop_stopper.types import GitHubUserProtocol
 
 # Type alias for details values
-DetailValue = str | int | float | bool | None
+DetailValue = str | int | float | bool | None | list[str]
 
 
 @dataclass

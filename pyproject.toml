@@ -51,6 +51,10 @@ ignore = [
     "E501",  # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Heuristic modules are imported for side-effect registration, not direct use
+"src/pr_slop_stopper/core/heuristics/__init__.py" = ["F401"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

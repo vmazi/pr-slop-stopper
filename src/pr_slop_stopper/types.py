@@ -16,6 +16,11 @@ class GitHubUserProtocol(Protocol):
     """
 
     @property
+    def login(self) -> str:
+        """Username/login."""
+        ...
+
+    @property
     def created_at(self) -> datetime:
         """Account creation date."""
         ...

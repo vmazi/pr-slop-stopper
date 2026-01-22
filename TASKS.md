@@ -210,59 +210,60 @@ Each heuristic needs:
 ### Tier 2: Moderate (Search API Required)
 
 #### 4.4 PR Acceptance Rate
-- [ ] Create `src/pr_slop_stopper/core/heuristics/pr_acceptance_rate.py`
-  - [ ] Search user's PRs from last 12 months
-  - [ ] Calculate monthly merge rates
-  - [ ] Detect spam months (high volume, low merge rate)
-  - [ ] Apply scoring (+10 to -25)
-- [ ] Create `tests/test_heuristics/test_pr_acceptance_rate.py`
-  - [ ] Test high merge rate
-  - [ ] Test spam month detection
-  - [ ] Test edge cases (no PRs, all open)
+- [x] Create `src/pr_slop_stopper/core/heuristics/pr_acceptance_rate.py`
+  - [x] Search user's PRs from last 12 months
+  - [x] Calculate monthly merge rates
+  - [x] Detect spam months (high volume, low merge rate)
+  - [x] Apply scoring (+10 to -25)
+- [x] Create `tests/test_heuristics/test_pr_acceptance_rate.py`
+  - [x] Test high merge rate
+  - [x] Test spam month detection
+  - [x] Test edge cases (no PRs, all open)
 
 #### 4.5 Contribution Type Patterns
-- [ ] Create `src/pr_slop_stopper/core/heuristics/contribution_type.py`
-  - [ ] Analyze PR files (code vs docs)
-  - [ ] Detect docs-only spam pattern
-  - [ ] Detect identical PR patterns
-  - [ ] Apply scoring (+5 to -22)
-- [ ] Create `tests/test_heuristics/test_contribution_type.py`
-  - [ ] Test code contributions
-  - [ ] Test docs-only detection
+- [x] Create `src/pr_slop_stopper/core/heuristics/contribution_type.py`
+  - [x] Analyze PR files (code vs docs)
+  - [x] Detect docs-only spam pattern
+  - [x] Detect trivial PR patterns
+  - [x] Apply scoring (+10 to -15)
+- [x] Create `tests/test_heuristics/test_contribution_type.py`
+  - [x] Test code contributions
+  - [x] Test docs-only detection
 
 ### Tier 3: Complex (Multiple API Calls)
 
 #### 4.6 Activity Patterns
-- [ ] Create `src/pr_slop_stopper/core/heuristics/activity_patterns.py`
-  - [ ] Analyze user events for consistency
-  - [ ] Detect dormancy burst pattern
-  - [ ] Check for low-star repo targeting
-  - [ ] Check drive-by PR pattern (PRs to un-starred repos)
-  - [ ] Apply scoring (+15 to -43)
-- [ ] Create `tests/test_heuristics/test_activity_patterns.py`
-  - [ ] Test consistent activity
-  - [ ] Test dormancy detection
-  - [ ] Test low-star targeting
+- [x] Create `src/pr_slop_stopper/core/heuristics/activity_patterns.py`
+  - [x] Analyze user events for consistency
+  - [x] Detect dormancy burst pattern
+  - [x] Detect burst activity in single month
+  - [x] Detect suspicious timing patterns
+  - [x] Apply scoring (+10 to -20)
+- [x] Create `tests/test_heuristics/test_activity_patterns.py`
+  - [x] Test consistent activity
+  - [x] Test dormancy detection
+  - [x] Test burst detection
 
 #### 4.7 Notable OSS Contributions
-- [ ] Create `src/pr_slop_stopper/core/heuristics/notable_oss.py`
-  - [ ] Define notable orgs list (Apache, Linux, CNCF, etc.)
-  - [ ] Search for merged PRs to notable orgs
-  - [ ] Apply scoring (0 to +30, capped)
-- [ ] Create `tests/test_heuristics/test_notable_oss.py`
-  - [ ] Test notable org detection
-  - [ ] Test score capping
+- [x] Create `src/pr_slop_stopper/core/heuristics/notable_contributions.py`
+  - [x] Classify repos by star count (very popular, popular, notable, small)
+  - [x] Search for merged PRs to notable repos
+  - [x] Apply scoring (+20 to -10)
+- [x] Create `tests/test_heuristics/test_notable_contributions.py`
+  - [x] Test notable repo detection
+  - [x] Test score calculation
 
 ### Per-PR Check (Context-Specific)
 
 #### 4.8 Fork Timing Check
-- [ ] Create `src/pr_slop_stopper/core/heuristics/fork_timing.py`
-  - [ ] Compare fork creation time to PR creation time
-  - [ ] Flag if fork created <24h before PR
-  - [ ] Apply scoring (0 to -10)
-- [ ] Create `tests/test_heuristics/test_fork_timing.py`
-  - [ ] Test quick fork detection
-  - [ ] Test normal fork timing
+- [x] Create `src/pr_slop_stopper/core/heuristics/fork_timing.py`
+  - [x] Compare fork creation time to PR creation time
+  - [x] Flag instant fork-to-PR pattern (<1 hour)
+  - [x] Flag quick fork-to-PR pattern (<24 hours)
+  - [x] Apply scoring (+10 to -20)
+- [x] Create `tests/test_heuristics/test_fork_timing.py`
+  - [x] Test quick fork detection
+  - [x] Test established contributor detection
 
 ---
 
@@ -527,7 +528,7 @@ These tasks are deferred until needed for caching/dashboard features.
 | Human Tasks | 11 | 0 | 0% |
 | Project Setup | 10 | 8 | 80% |
 | GitHub Client | 6 | 4 | 67% |
-| Heuristics | 24 | 12 | 50% |
+| Heuristics | 24 | 24 | 100% |
 | Scoring Engine | 4 | 4 | 100% |
 | Webhook | 7 | 6 | 86% |
 | Actions | 8 | 7 | 88% |
@@ -536,6 +537,6 @@ These tasks are deferred until needed for caching/dashboard features.
 | CI/CD | 1 | 1 | 100% |
 | Deployment | 4 | 3 | 75% |
 | Documentation | 3 | 0 | 0% |
-| **Total** | **87** | **54** | **62%** |
+| **Total** | **87** | **66** | **76%** |
 
 *Database tasks (13) deferred to future phase*
