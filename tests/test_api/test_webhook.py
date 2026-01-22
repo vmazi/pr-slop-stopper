@@ -7,7 +7,8 @@ from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from pr_slop_stopper.api.webhook import verify_signature
+from pr_slop_stopper.api.webhook import should_skip_user, verify_signature
+from pr_slop_stopper.core.repo_config import RepoConfig
 from pr_slop_stopper.main import app
 
 client = TestClient(app)
@@ -197,3 +198,98 @@ class TestWebhookEndpoint:
         assert response.status_code == 200
         assert response.json()["status"] == "accepted"
         assert response.json()["pr"] == 1
+
+
+class TestShouldSkipUser:
+    """Tests for skip conditions."""
+
+    def setup_method(self) -> None:
+        """Set up test fixtures."""
+        self.default_config = RepoConfig()
+
+    def test_skip_whitelisted_user(self) -> None:
+        """Test that whitelisted users are skipped."""
+        config = RepoConfig(whitelist=["trusted-user", "another-trusted"])
+        mock_client = MagicMock()
+
+        result = should_skip_user(mock_client, "owner/repo", "trusted-user", config)
+
+        assert result is True
+        # Should not check collaborators or merged PRs for whitelisted users
+        mock_client.get_repository.assert_not_called()
+
+    def test_skip_collaborator(self) -> None:
+        """Test that collaborators are skipped."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.has_in_collaborators.return_value = True
+        mock_client.get_repository.return_value = mock_repo
+
+        result = should_skip_user(
+            mock_client, "owner/repo", "collaborator-user", self.default_config
+        )
+
+        assert result is True
+        mock_repo.has_in_collaborators.assert_called_once_with("collaborator-user")
+
+    def test_skip_user_with_merged_pr(self) -> None:
+        """Test that users with merged PRs are skipped."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.has_in_collaborators.return_value = False
+        mock_client.get_repository.return_value = mock_repo
+
+        mock_search_results = MagicMock()
+        mock_search_results.totalCount = 3
+        mock_client.client.search_issues.return_value = mock_search_results
+
+        result = should_skip_user(
+            mock_client, "owner/repo", "returning-contributor", self.default_config
+        )
+
+        assert result is True
+        mock_client.client.search_issues.assert_called_once()
+        search_query = mock_client.client.search_issues.call_args[0][0]
+        assert "repo:owner/repo" in search_query
+        assert "is:merged" in search_query
+        assert "author:returning-contributor" in search_query
+
+    def test_no_skip_new_contributor(self) -> None:
+        """Test that new contributors are not skipped."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.has_in_collaborators.return_value = False
+        mock_client.get_repository.return_value = mock_repo
+
+        mock_search_results = MagicMock()
+        mock_search_results.totalCount = 0
+        mock_client.client.search_issues.return_value = mock_search_results
+
+        result = should_skip_user(mock_client, "owner/repo", "new-user", self.default_config)
+
+        assert result is False
+
+    def test_collaborator_check_error_continues(self) -> None:
+        """Test that collaborator check errors don't stop processing."""
+        mock_client = MagicMock()
+        mock_client.get_repository.side_effect = Exception("API error")
+
+        mock_search_results = MagicMock()
+        mock_search_results.totalCount = 0
+        mock_client.client.search_issues.return_value = mock_search_results
+
+        result = should_skip_user(mock_client, "owner/repo", "some-user", self.default_config)
+
+        assert result is False  # Should continue and check merged PRs
+
+    def test_merged_pr_check_error_continues(self) -> None:
+        """Test that merged PR check errors don't stop processing."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.has_in_collaborators.return_value = False
+        mock_client.get_repository.return_value = mock_repo
+        mock_client.client.search_issues.side_effect = Exception("Search API error")
+
+        result = should_skip_user(mock_client, "owner/repo", "some-user", self.default_config)
+
+        assert result is False  # Should continue even if search fails

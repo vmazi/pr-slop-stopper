@@ -1,5 +1,10 @@
 version: "3.8"
 
+networks:
+  shared:
+    name: shared_network
+    external: true
+
 services:
   pr-slop-stopper:
     build:
@@ -7,8 +12,9 @@ services:
       dockerfile: Containerfile
     container_name: pr-slop-stopper
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    networks:
+      - shared
+    # No host port binding needed - Caddy accesses via shared_network
     environment:
       - GITHUB_APP_ID=${GITHUB_APP_ID}
       - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}

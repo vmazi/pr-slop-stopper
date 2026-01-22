@@ -107,12 +107,24 @@ These tasks require manual action outside of code.
 
 ### Infrastructure Setup
 
-- [ ] Set up domain/subdomain for webhook endpoint
-- [ ] Configure DNS to point to VPS
-- [ ] Set up TLS certificate (Let's Encrypt or similar)
+**Architecture**: FastAPI app runs in Podman container on `shared_network`, Caddy (in automagica-infra) handles TLS and reverse proxy.
+
+```
+Internet → Caddy (automagica-infra, TLS) → shared_network → pr-slop-stopper:8000
+```
+
+- [ ] Set up domain/subdomain for webhook endpoint (e.g., `slop.automagica.net`)
+- [ ] Configure DNS to point to server
+- [ ] Add entry to `automagica-infra/Caddyfile`:
+  ```
+  slop.automagica.net {
+      reverse_proxy pr-slop-stopper:8000
+  }
+  ```
+- [ ] Ensure `shared_network` exists (created by automagica-infra podman-compose)
 - [ ] Create secrets in deployment environment:
   - [ ] `GITHUB_APP_ID`
-  - [ ] `GITHUB_PRIVATE_KEY` (contents of .pem)
+  - [ ] `GITHUB_PRIVATE_KEY` (contents of .pem - used for GitHub API auth, not TLS)
   - [ ] `GITHUB_WEBHOOK_SECRET`
 
 ---
@@ -136,9 +148,9 @@ These tasks require manual action outside of code.
 ### Configuration Files
 
 - [x] Update `pyproject.toml` with entry points
-- [ ] Create `Containerfile` for production image
-- [ ] Create `podman-compose.yml` for deployment
-- [ ] Create `.env.example` with all required env vars
+- [x] Create `Containerfile` for production image
+- [x] Create `podman-compose.yml` for deployment
+- [x] Create `.env.example` with all required env vars
 
 ---
 
@@ -151,7 +163,7 @@ These tasks require manual action outside of code.
   - [x] `get_installation_client(installation_id)` function
 - [x] Create `src/pr_slop_stopper/github/client.py`
   - [x] Wrapper around PyGithub with error handling
-  - [ ] Rate limit handling and backoff
+  - [x] Rate limit handling and backoff
 - [x] Create `src/pr_slop_stopper/github/models.py`
   - [x] Pydantic models for webhook payloads
   - [x] `PROpenedEvent` model
@@ -159,8 +171,8 @@ These tasks require manual action outside of code.
 
 ### Tests
 
-- [ ] Create `tests/test_github/test_auth.py`
-- [ ] Create `tests/test_github/test_client.py` (with mocks)
+- [x] Create `tests/test_github/test_auth.py`
+- [x] Create `tests/test_github/test_client.py` (with mocks)
 
 ---
 
@@ -316,7 +328,7 @@ Each heuristic needs:
 - [x] Create `tests/test_api/test_webhook.py`
   - [x] Test signature validation
   - [x] Test event parsing
-  - [ ] Test skip conditions
+  - [x] Test skip conditions
 - [x] Create `tests/test_api/test_health.py`
 
 ---
@@ -347,7 +359,7 @@ Each heuristic needs:
 
 ### Tests
 
-- [ ] Create `tests/test_actions/test_labeler.py`
+- [x] Create `tests/test_actions/test_labeler.py`
 - [x] Create `tests/test_actions/test_commenter.py`
 - [x] Create `tests/test_actions/test_executor.py`
 
@@ -434,21 +446,21 @@ Each heuristic needs:
   - [x] `pr-slop-stopper` service
   - [x] Environment variables from `.env`
   - [x] Health checks
-  - [x] Port mapping
+  - [x] Joins `shared_network` (external, created by automagica-infra)
 
 ### Deployment Files
 
 - [x] Create `.env.example`
-- [ ] Create `devenv.sh` for local development
+- [x] Create `devenv.sh` for local development
 
 ---
 
 ## 12. Documentation Updates
 
-- [ ] Update `README.md` with:
-  - [ ] Installation instructions
-  - [ ] Configuration guide
-  - [ ] Local development setup
+- [x] Update `README.md` with:
+  - [x] Installation instructions
+  - [x] Configuration guide
+  - [x] Local development setup
 - [ ] Create `CONTRIBUTING.md`
 - [ ] Create `CHANGELOG.md`
 
@@ -526,17 +538,17 @@ These tasks are deferred until needed for caching/dashboard features.
 | Category | Total | Done | Progress |
 |----------|-------|------|----------|
 | Human Tasks | 11 | 0 | 0% |
-| Project Setup | 10 | 8 | 80% |
-| GitHub Client | 6 | 4 | 67% |
+| Project Setup | 9 | 9 | 100% |
+| GitHub Client | 6 | 6 | 100% |
 | Heuristics | 24 | 24 | 100% |
 | Scoring Engine | 4 | 4 | 100% |
-| Webhook | 7 | 6 | 86% |
-| Actions | 8 | 7 | 88% |
+| Webhook | 7 | 7 | 100% |
+| Actions | 8 | 8 | 100% |
 | Configuration | 4 | 4 | 100% |
 | Testing | 5 | 5 | 100% |
 | CI/CD | 1 | 1 | 100% |
-| Deployment | 4 | 3 | 75% |
-| Documentation | 3 | 0 | 0% |
-| **Total** | **87** | **66** | **76%** |
+| Deployment | 4 | 4 | 100% |
+| Documentation | 3 | 1 | 33% |
+| **Total** | **86** | **73** | **85%** |
 
 *Database tasks (13) deferred to future phase*

@@ -22,17 +22,22 @@ PR Slop Stopper analyzes the GitHub profile and activity history of PR authors t
 - **Non-invasive** - Only evaluates PRs from users who have never merged a commit to the repo
 - **Transparent** - Adds labels and comments explaining why a PR was flagged
 
-## Quick Start
+## Scoring Heuristics
 
-1. Install the GitHub App on your organization
-2. Configure sensitivity thresholds in `.github/pr-slop-stopper.yml`
-3. Optionally add whitelisted users
+PR Slop Stopper uses 8 heuristics to evaluate contributors:
 
-## Documentation
+| Heuristic | Description | Score Range |
+|-----------|-------------|-------------|
+| **Account Age** | Newer accounts score lower | -20 to +15 |
+| **Profile Completeness** | Complete profiles (bio, avatar, etc.) score higher | -10 to +23 |
+| **Follower Patterns** | Detects follow-spam patterns | -10 to +8 |
+| **PR Acceptance Rate** | Historical merge rate across repos | -25 to +10 |
+| **Contribution Type** | Detects docs-only spam patterns | -15 to +10 |
+| **Activity Patterns** | Detects burst/dormancy patterns | -20 to +10 |
+| **Notable Contributions** | Contributions to popular OSS repos | -10 to +20 |
+| **Fork Timing** | Detects instant fork-to-PR pattern | -20 to +10 |
 
-- [Product Requirements](docs/PRD.md) - Detailed problem statement and requirements
-- [Heuristics Guide](docs/HEURISTICS.md) - Scoring criteria and weights
-- [Architecture](docs/ARCHITECTURE.md) - Technical design and implementation details
+Final scores are clamped to the range [-100, +100].
 
 ## Configuration
 
@@ -51,16 +56,139 @@ whitelist:
 
 # Enable/disable specific heuristics
 heuristics:
-  profile_completeness: true
   account_age: true
+  profile_completeness: true
+  follower_patterns: true
   pr_acceptance_rate: true
-  notable_contributions: true
+  contribution_type: true
   activity_patterns: true
+  notable_contributions: true
+  fork_timing: true
+
+# Action settings
+actions:
+  add_label: true      # Add labels to flagged PRs
+  add_comment: true    # Add explanation comment
+  auto_close: false    # Auto-close PRs at close threshold (disabled by default)
+
+# Custom label names (optional)
+labels:
+  warning: "pr-slop-stopper: warning"
+  spam: "pr-slop-stopper: likely-spam"
 ```
+
+## Skip Conditions
+
+PRs are **not scored** if the author:
+1. Is listed in the repository whitelist
+2. Is a collaborator or maintainer of the repository
+3. Has previously merged a PR to the repository
+
+## Local Development
+
+### Prerequisites
+
+- Python 3.11+
+- [uv](https://github.com/astral-sh/uv) package manager
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/pr-slop-stopper.git
+cd pr-slop-stopper
+
+# Set up development environment
+source devenv.sh
+```
+
+The `devenv.sh` script:
+- Syncs dependencies with uv
+- Activates the virtual environment
+- Sets up helpful aliases
+
+### Available Commands
+
+After sourcing `devenv.sh`:
+
+```bash
+test      # Run pytest with verbose output
+lint      # Run ruff linter
+lintfix   # Run ruff linter with auto-fix
+fmt       # Format code with ruff
+fmtcheck  # Check code formatting
+typecheck # Run type checker
+check     # Run all checks (lint, format, typecheck, test)
+serve     # Start development server with auto-reload
+```
+
+### Manual Commands
+
+```bash
+# Install dependencies
+uv sync --dev
+
+# Run tests
+uv run pytest -v
+
+# Run linter
+uv run ruff check .
+
+# Format code
+uv run ruff format .
+
+# Type check
+uv run ty check src/
+
+# Build container
+./build.sh
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# GitHub App Configuration
+GITHUB_APP_ID=your_app_id
+GITHUB_WEBHOOK_SECRET=your_webhook_secret
+GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+```
+
+## Deployment
+
+### Architecture
+
+PR Slop Stopper runs as a containerized FastAPI application behind a Caddy reverse proxy:
+
+```
+Internet -> Caddy (TLS) -> shared_network -> pr-slop-stopper:8000
+```
+
+### Container Deployment
+
+```bash
+# Build the container
+./build.sh
+
+# Or manually
+podman build -t pr-slop-stopper -f Containerfile .
+
+# Run with podman-compose
+podman-compose up -d
+```
+
+The container joins `shared_network` to be accessible from Caddy.
+
+## Documentation
+
+- [Product Requirements](docs/PRD.md) - Detailed problem statement and requirements
+- [Heuristics Guide](docs/HEURISTICS.md) - Scoring criteria and weights
+- [Architecture](docs/ARCHITECTURE.md) - Technical design and implementation details
 
 ## Status
 
-🚧 **In Development** - Not yet available for installation
+In Development - Not yet available for public installation.
 
 ## License
 
