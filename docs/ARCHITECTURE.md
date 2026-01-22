@@ -104,12 +104,124 @@ async def get_installation_token(jwt_token: str, installation_id: int) -> str:
 | Component | Technology | Rationale |
 |-----------|------------|-----------|
 | API Framework | FastAPI | Async support, auto OpenAPI docs, Pydantic validation |
+| GitHub API Client | PyGithub | Mature Python library for GitHub REST API |
 | Database | PostgreSQL | Reliable, good for caching and logging |
 | ORM | SQLAlchemy 2.0 | Async support, mature ecosystem |
 | Task Queue | None (v1) | Synchronous processing initially |
 | Auth (future) | Authentik OIDC | Existing infrastructure for dashboard |
 | Container | Podman | Existing VPS infrastructure |
 | Reverse Proxy | Existing infra | TLS termination, routing |
+
+## GitHub API Client (PyGithub)
+
+We use [PyGithub](https://github.com/PyGithub/PyGithub) for all GitHub API interactions. This provides a typed, Pythonic interface to the GitHub REST API.
+
+### Installation
+
+```bash
+pip install PyGithub
+```
+
+### Authentication with GitHub App
+
+```python
+from github import Github, GithubIntegration
+
+def get_github_client(app_id: int, private_key: str, installation_id: int) -> Github:
+    """
+    Create authenticated GitHub client for an installation.
+
+    Uses GitHub App authentication flow:
+    1. Generate JWT from app credentials
+    2. Exchange JWT for installation access token
+    3. Create Github client with installation token
+    """
+    integration = GithubIntegration(app_id, private_key)
+    access_token = integration.get_access_token(installation_id).token
+    return Github(access_token)
+```
+
+### Key Objects Used
+
+| Object | PyGithub Class | Use Case |
+|--------|---------------|----------|
+| User Profile | `NamedUser` | Profile completeness, account age, followers |
+| Pull Request | `PullRequest` | PR analysis, merge status, files changed |
+| Repository | `Repository` | Star count, fork detection, collaborators |
+| Issue (Search) | `Issue` | Search results for PRs (PRs are issues) |
+
+### User Profile Fields
+
+```python
+user = g.get_user("username")
+
+# Profile fields
+user.avatar_url      # str: Profile picture URL
+user.bio             # str | None: Bio text
+user.blog            # str | None: Website URL
+user.company         # str | None: Company name
+user.location        # str | None: Location
+user.twitter_username # str | None: Twitter handle
+user.name            # str | None: Display name
+user.email           # str | None: Public email
+
+# Metrics
+user.followers       # int: Follower count
+user.following       # int: Following count
+user.public_repos    # int: Public repository count
+
+# Timestamps
+user.created_at      # datetime: Account creation date
+user.updated_at      # datetime: Last profile update
+```
+
+### Search API Usage
+
+```python
+# Search for user's PRs
+query = "author:username type:pr created:>=2024-01-01"
+results = g.search_issues(query, sort="created", order="desc")
+
+# Search for merged PRs to specific org
+query = "author:username type:pr is:merged org:kubernetes"
+results = g.search_issues(query)
+
+# Access search result properties
+for issue in results:
+    issue.number        # PR number
+    issue.state         # "open" or "closed"
+    issue.created_at    # Creation timestamp
+    issue.repository    # Repository object
+```
+
+### Rate Limiting
+
+| API Type | Limit | Notes |
+|----------|-------|-------|
+| Core API | 5,000/hour per installation | Most operations |
+| Search API | 30/minute | Shared across all search queries |
+| GraphQL | 5,000 points/hour | Alternative for complex queries |
+
+```python
+# Check rate limit status
+rate_limit = g.get_rate_limit()
+print(f"Core: {rate_limit.core.remaining}/{rate_limit.core.limit}")
+print(f"Search: {rate_limit.search.remaining}/{rate_limit.search.limit}")
+```
+
+### Heuristic Implementation Details
+
+Detailed implementation documentation for each heuristic:
+
+| Heuristic | Documentation |
+|-----------|---------------|
+| Profile Completeness | [profile_completeness_implementation_details.md](heuristics/profile_completeness_implementation_details.md) |
+| Account Age | [account_age_implementation_details.md](heuristics/account_age_implementation_details.md) |
+| PR Acceptance Rate | [pr_acceptance_rate_implementation_details.md](heuristics/pr_acceptance_rate_implementation_details.md) |
+| Notable OSS Contributions | [notable_oss_contributions_implementation_details.md](heuristics/notable_oss_contributions_implementation_details.md) |
+| Activity Patterns | [activity_patterns_implementation_details.md](heuristics/activity_patterns_implementation_details.md) |
+| Follower Patterns | [follower_patterns_implementation_details.md](heuristics/follower_patterns_implementation_details.md) |
+| Contribution Type Patterns | [contribution_type_patterns_implementation_details.md](heuristics/contribution_type_patterns_implementation_details.md) |
 
 ## Project Structure
 
