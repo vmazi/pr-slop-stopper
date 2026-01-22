@@ -174,11 +174,16 @@ Internet -> Caddy (TLS) -> shared_network -> pr-slop-stopper:8000
 # Or manually
 podman build -t pr-slop-stopper -f Containerfile .
 
+# Create podman secrets (one-time setup)
+echo "your_app_id" | podman secret create GITHUB_APP_ID -
+cat /path/to/private-key.pem | podman secret create GITHUB_PRIVATE_KEY -
+echo "your_webhook_secret" | podman secret create GITHUB_WEBHOOK_SECRET -
+
 # Run with podman-compose
 podman-compose up -d
 ```
 
-The container joins `shared_network` to be accessible from Caddy.
+The container joins `shared_network` to be accessible from Caddy. Secrets are injected as environment variables using podman's secret management.
 
 ## Documentation
 

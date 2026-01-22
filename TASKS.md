@@ -122,10 +122,12 @@ Internet → Caddy (automagica-infra, TLS) → shared_network → pr-slop-stoppe
   }
   ```
 - [ ] Ensure `shared_network` exists (created by automagica-infra podman-compose)
-- [ ] Create secrets in deployment environment:
-  - [ ] `GITHUB_APP_ID`
-  - [ ] `GITHUB_PRIVATE_KEY` (contents of .pem - used for GitHub API auth, not TLS)
-  - [ ] `GITHUB_WEBHOOK_SECRET`
+- [ ] Create podman secrets:
+  ```bash
+  echo "your_app_id" | podman secret create GITHUB_APP_ID -
+  cat /path/to/private-key.pem | podman secret create GITHUB_PRIVATE_KEY -
+  echo "your_webhook_secret" | podman secret create GITHUB_WEBHOOK_SECRET -
+  ```
 
 ---
 

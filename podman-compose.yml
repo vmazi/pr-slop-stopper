@@ -5,6 +5,14 @@ networks:
     name: shared_network
     external: true
 
+secrets:
+  GITHUB_APP_ID:
+    external: true
+  GITHUB_PRIVATE_KEY:
+    external: true
+  GITHUB_WEBHOOK_SECRET:
+    external: true
+
 services:
   pr-slop-stopper:
     build:
@@ -14,13 +22,16 @@ services:
     restart: unless-stopped
     networks:
       - shared
-    # No host port binding needed - Caddy accesses via shared_network
-    environment:
-      - GITHUB_APP_ID=${GITHUB_APP_ID}
-      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
-    env_file:
-      - .env
+    secrets:
+      - source: GITHUB_APP_ID
+        type: env
+        target: GITHUB_APP_ID
+      - source: GITHUB_PRIVATE_KEY
+        type: env
+        target: GITHUB_PRIVATE_KEY
+      - source: GITHUB_WEBHOOK_SECRET
+        type: env
+        target: GITHUB_WEBHOOK_SECRET
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
