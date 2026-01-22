@@ -114,78 +114,70 @@ async def get_installation_token(jwt_token: str, installation_id: int) -> str:
 
 ## Development Tooling
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| [uv](https://github.com/astral-sh/uv) | Dependency management | Latest |
-| [ty](https://github.com/astral-sh/ty) | Type checking | Latest |
-| [ruff](https://github.com/astral-sh/ruff) | Linting & formatting | Latest |
+| Tool | Purpose | Docs |
+|------|---------|------|
+| [uv](https://github.com/astral-sh/uv) | Project & dependency management | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
+| [ty](https://github.com/astral-sh/ty) | Type checking | [docs.astral.sh/ty](https://docs.astral.sh/ty/) |
+| [ruff](https://github.com/astral-sh/ruff) | Linting & formatting | [docs.astral.sh/ruff](https://docs.astral.sh/ruff/) |
 
-### Project Setup
+### Project Initialization
+
+This project was initialized using `uv init`:
 
 ```bash
 # Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Create virtual environment and install dependencies
-uv venv
-source .venv/bin/activate
-uv pip install -e ".[dev]"
+# Initialize project (creates pyproject.toml, .python-version)
+uv init --name pr-slop-stopper --python 3.11
+
+# Add dependencies
+uv add fastapi uvicorn[standard] PyGithub sqlalchemy[asyncio] asyncpg
+uv add pydantic pydantic-settings structlog python-dateutil
+
+# Add dev dependencies
+uv add --dev ty ruff pytest pytest-asyncio httpx
 ```
 
-### pyproject.toml Configuration
+#### uv Project Types
 
-```toml
-[project]
-name = "pr-slop-stopper"
-version = "0.1.0"
-description = "GitHub App to combat AI-generated spam PRs"
-requires-python = ">=3.11"
-dependencies = [
-    "fastapi>=0.109.0",
-    "uvicorn[standard]>=0.27.0",
-    "PyGithub>=2.1.0",
-    "sqlalchemy[asyncio]>=2.0.0",
-    "asyncpg>=0.29.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "structlog>=24.1.0",
-    "python-dateutil>=2.8.0",
-]
+| Type | Command | Use Case |
+|------|---------|----------|
+| Application | `uv init` | Web servers, CLIs, scripts (our choice) |
+| Library | `uv init --lib` | PyPI packages with src/ layout |
+| Packaged App | `uv init --package` | Installable apps with entry points |
 
-[project.optional-dependencies]
-dev = [
-    "ty>=0.0.1",
-    "ruff>=0.4.0",
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.23.0",
-    "httpx>=0.27.0",
-]
+Reference: [uv init documentation](https://docs.astral.sh/uv/concepts/projects/init/)
 
-[tool.ruff]
-line-length = 100
-target-version = "py311"
+### Working with the Project
 
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-]
-ignore = [
-    "E501",  # line too long (handled by formatter)
-]
+```bash
+# Sync dependencies (creates .venv automatically)
+uv sync
 
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
+# Sync with dev dependencies
+uv sync --dev
 
-[tool.ty]
-python-version = "3.11"
+# Run commands in the virtual environment
+uv run python main.py
+uv run pytest -v
+uv run ruff check .
+
+# Add new dependencies
+uv add requests
+uv add --dev mypy
 ```
+
+### pyproject.toml
+
+The `pyproject.toml` is managed by uv. See the actual file in the repo root for current configuration.
+
+Key sections:
+- `[project]` - Package metadata and dependencies
+- `[project.optional-dependencies]` - Dev dependencies under `dev` group
+- `[tool.ruff]` - Linting and formatting configuration
+- `[tool.ty]` - Type checking configuration
+- `[tool.pytest.ini_options]` - Test configuration
 
 ### Development Commands
 
@@ -207,71 +199,17 @@ uv run ruff check . && uv run ruff format --check . && uv run ty check src/
 
 ### build.sh Script
 
-The build script ensures code quality before building the container image:
+The build script (`build.sh` in repo root) ensures code quality before building the container image.
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
+**Quality Gates:**
+1. `uv sync --dev` - Ensure dependencies installed
+2. `uv run ruff check .` - Lint check
+3. `uv run ruff format --check .` - Format check
+4. `uv run ty check src/` - Type check
+5. `uv run pytest -v` - Run tests
+6. `podman build ...` - Build container (only if all checks pass)
 
-# Default to podman, allow override with --runtime docker
-RUNTIME="${1:-podman}"
-if [[ "$1" == "--runtime" ]]; then
-    RUNTIME="${2:-podman}"
-fi
-
-IMAGE_NAME="pr-slop-stopper"
-IMAGE_TAG="latest"
-
-echo "=== PR Slop Stopper Build ==="
-echo "Runtime: $RUNTIME"
-echo ""
-
-# Step 1: Lint check
-echo ">>> Running ruff lint check..."
-uv run ruff check .
-if [[ $? -ne 0 ]]; then
-    echo "ERROR: Linting failed. Fix errors before building."
-    exit 1
-fi
-
-# Step 2: Format check
-echo ">>> Running ruff format check..."
-uv run ruff format --check .
-if [[ $? -ne 0 ]]; then
-    echo "ERROR: Formatting check failed. Run 'uv run ruff format .' to fix."
-    exit 1
-fi
-
-# Step 3: Type check
-echo ">>> Running ty type check..."
-uv run ty check src/
-if [[ $? -ne 0 ]]; then
-    echo "ERROR: Type check failed. Fix type errors before building."
-    exit 1
-fi
-
-# Step 4: Run tests
-echo ">>> Running tests..."
-uv run pytest -v
-if [[ $? -ne 0 ]]; then
-    echo "ERROR: Tests failed. Fix failing tests before building."
-    exit 1
-fi
-
-echo ""
-echo ">>> All checks passed! Building container image..."
-echo ""
-
-# Step 5: Build container
-$RUNTIME build -t "${IMAGE_NAME}:${IMAGE_TAG}" -f Containerfile .
-
-echo ""
-echo "=== Build complete ==="
-echo "Image: ${IMAGE_NAME}:${IMAGE_TAG}"
-echo "Run with: $RUNTIME run -p 8000:8000 ${IMAGE_NAME}:${IMAGE_TAG}"
-```
-
-### Usage
+**Usage:**
 
 ```bash
 # Build with podman (default)
@@ -280,8 +218,8 @@ echo "Run with: $RUNTIME run -p 8000:8000 ${IMAGE_NAME}:${IMAGE_TAG}"
 # Build with docker
 ./build.sh --runtime docker
 
-# Skip checks and build directly (not recommended)
-podman build -t pr-slop-stopper:latest -f Containerfile .
+# Show help
+./build.sh --help
 ```
 
 ## GitHub API Client (PyGithub)
@@ -291,7 +229,7 @@ We use [PyGithub](https://github.com/PyGithub/PyGithub) for all GitHub API inter
 ### Installation
 
 ```bash
-pip install PyGithub
+uv add PyGithub
 ```
 
 ### Authentication with GitHub App
