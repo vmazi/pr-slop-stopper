@@ -78,7 +78,7 @@ class TestFullFlow:
         mock_repo.get_contents.side_effect = Exception("File not found")
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,
@@ -124,7 +124,7 @@ class TestFullFlow:
         mock_repo.get_contents.side_effect = Exception("File not found")
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,
@@ -170,7 +170,7 @@ class TestFullFlow:
         mock_repo.get_contents.side_effect = Exception("File not found")
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,
@@ -212,7 +212,7 @@ class TestFullFlow:
         mock_repo.get_contents.side_effect = Exception("File not found")
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,
@@ -257,7 +257,7 @@ class TestFullFlow:
         mock_github_client.client.search_issues.return_value = MagicMock(totalCount=0)
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,
@@ -302,7 +302,7 @@ class TestFullFlow:
         mock_repo.get_contents.side_effect = Exception("File not found")
 
         with (
-            patch("pr_slop_stopper.config.get_settings", return_value=mock_settings),
+            patch("pr_slop_stopper.api.webhook.get_settings", return_value=mock_settings),
             patch(
                 "pr_slop_stopper.github.GitHubClient",
                 return_value=mock_github_client,

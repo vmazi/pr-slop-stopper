@@ -1,9 +1,10 @@
 """Notable OSS contributions heuristic implementation."""
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from dateutil.relativedelta import relativedelta
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import (
     BaseHeuristic,
@@ -11,11 +12,7 @@ from pr_slop_stopper.core.heuristics.base import (
     HeuristicResult,
     registry,
 )
-
-if TYPE_CHECKING:
-    from github import Github
-
-    from pr_slop_stopper.types import GitHubUserProtocol
+from pr_slop_stopper.types import GitHubUserProtocol
 
 # Star thresholds for repo classification
 VERY_POPULAR_THRESHOLD = 10000  # 10k+ stars
@@ -39,10 +36,10 @@ class NotableContributionsHeuristic(BaseHeuristic):
 
     def evaluate(
         self,
-        user: "GitHubUserProtocol",
+        user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate notable contributions score.
 
@@ -81,7 +78,7 @@ class NotableContributionsHeuristic(BaseHeuristic):
 
     def _fetch_contribution_data(
         self,
-        client: "Github",
+        client: Github,
         username: str,
         reference_date: datetime,
     ) -> dict:

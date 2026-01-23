@@ -1,9 +1,10 @@
 """Fork timing check heuristic implementation."""
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from dateutil.relativedelta import relativedelta
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import (
     BaseHeuristic,
@@ -11,11 +12,7 @@ from pr_slop_stopper.core.heuristics.base import (
     HeuristicResult,
     registry,
 )
-
-if TYPE_CHECKING:
-    from github import Github
-
-    from pr_slop_stopper.types import GitHubUserProtocol
+from pr_slop_stopper.types import GitHubUserProtocol
 
 # Time thresholds
 SUSPICIOUS_FORK_HOURS = 24  # Fork to PR within 24 hours is suspicious
@@ -38,10 +35,10 @@ class ForkTimingHeuristic(BaseHeuristic):
 
     def evaluate(
         self,
-        user: "GitHubUserProtocol",
+        user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate fork timing pattern score.
 
@@ -78,7 +75,7 @@ class ForkTimingHeuristic(BaseHeuristic):
 
     def _fetch_fork_timing_data(
         self,
-        client: "Github",
+        client: Github,
         username: str,
         reference_date: datetime,
     ) -> dict:

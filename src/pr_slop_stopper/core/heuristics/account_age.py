@@ -1,15 +1,12 @@
 """Account age heuristic implementation."""
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 from dateutil.relativedelta import relativedelta
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import BaseHeuristic, HeuristicResult, registry
 from pr_slop_stopper.types import GitHubUserProtocol
-
-if TYPE_CHECKING:
-    from github import Github
 
 
 class AccountAgeHeuristic(BaseHeuristic):
@@ -24,7 +21,7 @@ class AccountAgeHeuristic(BaseHeuristic):
         user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate account age score.
 

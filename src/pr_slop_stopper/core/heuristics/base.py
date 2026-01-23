@@ -4,12 +4,10 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING
+
+from github import Github
 
 from pr_slop_stopper.types import GitHubUserProtocol
-
-if TYPE_CHECKING:
-    from github import Github
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +40,7 @@ class BaseHeuristic(ABC):
         user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate the heuristic for a user.
 
@@ -85,7 +83,7 @@ class HeuristicRegistry:
         enabled: list[str] | None = None,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> list[HeuristicResult]:
         """Evaluate all (or specified) heuristics for a user.
 

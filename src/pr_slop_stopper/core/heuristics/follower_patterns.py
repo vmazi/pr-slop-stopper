@@ -1,13 +1,11 @@
 """Follower patterns heuristic implementation."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import BaseHeuristic, HeuristicResult, registry
 from pr_slop_stopper.types import GitHubUserProtocol
-
-if TYPE_CHECKING:
-    from github import Github
 
 
 class FollowerPatternsHeuristic(BaseHeuristic):
@@ -22,7 +20,7 @@ class FollowerPatternsHeuristic(BaseHeuristic):
         user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate follower patterns score.
 

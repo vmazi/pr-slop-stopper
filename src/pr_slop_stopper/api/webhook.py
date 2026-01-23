@@ -6,7 +6,11 @@ import logging
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
 
-from pr_slop_stopper.core.repo_config import RepoConfig
+from pr_slop_stopper.actions.executor import execute_action
+from pr_slop_stopper.config import get_settings
+from pr_slop_stopper.core import ReputationScorer
+from pr_slop_stopper.core.repo_config import RepoConfig, load_repo_config
+from pr_slop_stopper.github import GitHubClient
 from pr_slop_stopper.github.models import PullRequestWebhookPayload
 from pr_slop_stopper.types import GitHubClientProtocol
 
@@ -55,12 +59,6 @@ async def process_pull_request(
         app_id: GitHub App ID
         private_key: GitHub App private key
     """
-    # Import here to avoid circular imports
-    from pr_slop_stopper.actions.executor import execute_action
-    from pr_slop_stopper.core import ReputationScorer
-    from pr_slop_stopper.core.repo_config import load_repo_config
-    from pr_slop_stopper.github import GitHubClient
-
     repo_full_name = payload.repository.full_name
     pr_number = payload.number
     sender_login = payload.sender.login
@@ -174,8 +172,6 @@ async def marketplace_webhook(
 
     Logs marketplace events for monitoring app installations and subscription changes.
     """
-    from pr_slop_stopper.config import get_settings
-
     settings = get_settings()
 
     # Read raw body for signature verification
@@ -215,9 +211,6 @@ async def github_webhook(
 
     Returns 200 with status and processes the event in the background.
     """
-    # Import settings lazily to allow for testing
-    from pr_slop_stopper.config import get_settings
-
     settings = get_settings()
 
     # Read raw body for signature verification

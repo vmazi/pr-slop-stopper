@@ -2,9 +2,9 @@
 
 from collections import defaultdict
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 from dateutil.relativedelta import relativedelta
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import (
     BaseHeuristic,
@@ -12,11 +12,7 @@ from pr_slop_stopper.core.heuristics.base import (
     HeuristicResult,
     registry,
 )
-
-if TYPE_CHECKING:
-    from github import Github
-
-    from pr_slop_stopper.types import GitHubUserProtocol
+from pr_slop_stopper.types import GitHubUserProtocol
 
 
 class ActivityPatternsHeuristic(BaseHeuristic):
@@ -35,10 +31,10 @@ class ActivityPatternsHeuristic(BaseHeuristic):
 
     def evaluate(
         self,
-        user: "GitHubUserProtocol",
+        user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate activity pattern score.
 
@@ -75,7 +71,7 @@ class ActivityPatternsHeuristic(BaseHeuristic):
 
     def _fetch_activity_data(
         self,
-        client: "Github",
+        client: Github,
         username: str,
         reference_date: datetime,
     ) -> dict:

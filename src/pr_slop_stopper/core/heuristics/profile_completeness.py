@@ -2,7 +2,8 @@
 
 import re
 from datetime import datetime
-from typing import TYPE_CHECKING
+
+from github import Github
 
 from pr_slop_stopper.core.heuristics.base import (
     BaseHeuristic,
@@ -11,9 +12,6 @@ from pr_slop_stopper.core.heuristics.base import (
     registry,
 )
 from pr_slop_stopper.types import GitHubUserProtocol
-
-if TYPE_CHECKING:
-    from github import Github
 
 
 def is_default_avatar(avatar_url: str | None) -> bool:
@@ -69,7 +67,7 @@ class ProfileCompletenessHeuristic(BaseHeuristic):
         user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
-        github_client: "Github | None" = None,
+        github_client: Github | None = None,
     ) -> HeuristicResult:
         """Evaluate profile completeness score.
 

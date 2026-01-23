@@ -99,7 +99,7 @@ class TestWebhookEndpoint:
             ).hexdigest()
         )
 
-    @patch("pr_slop_stopper.config.get_settings")
+    @patch("pr_slop_stopper.api.webhook.get_settings")
     def test_invalid_signature_returns_401(self, mock_settings: MagicMock) -> None:
         """Test that invalid signature returns 401."""
         mock_settings.return_value = MagicMock(
@@ -122,7 +122,7 @@ class TestWebhookEndpoint:
         assert response.status_code == 401
         assert "Invalid signature" in response.json()["detail"]
 
-    @patch("pr_slop_stopper.config.get_settings")
+    @patch("pr_slop_stopper.api.webhook.get_settings")
     def test_non_pr_event_ignored(self, mock_settings: MagicMock) -> None:
         """Test that non-PR events are ignored."""
         mock_settings.return_value = MagicMock(
@@ -150,7 +150,7 @@ class TestWebhookEndpoint:
         assert response.json()["status"] == "ignored"
         assert "push" in response.json()["reason"]
 
-    @patch("pr_slop_stopper.config.get_settings")
+    @patch("pr_slop_stopper.api.webhook.get_settings")
     def test_non_opened_action_ignored(self, mock_settings: MagicMock) -> None:
         """Test that non-opened actions are ignored."""
         mock_settings.return_value = MagicMock(
@@ -179,7 +179,7 @@ class TestWebhookEndpoint:
         assert response.json()["status"] == "ignored"
         assert "closed" in response.json()["reason"]
 
-    @patch("pr_slop_stopper.config.get_settings")
+    @patch("pr_slop_stopper.api.webhook.get_settings")
     def test_valid_pr_opened_accepted(self, mock_settings: MagicMock) -> None:
         """Test that valid PR opened event returns 200 and queues processing."""
         mock_settings.return_value = MagicMock(
