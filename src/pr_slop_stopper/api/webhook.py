@@ -168,7 +168,6 @@ def should_skip_user(
 async def marketplace_webhook(
     request: Request,
     x_hub_signature_256: str | None = Header(None),
-    x_github_event: str | None = Header(None),
 ) -> dict[str, str]:
     """Handle GitHub Marketplace webhook events.
 
@@ -185,33 +184,15 @@ async def marketplace_webhook(
     if not verify_signature(body, x_hub_signature_256 or "", settings.github_webhook_secret):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
-    # Parse payload
+    # Parse and log payload
     try:
         payload = await request.json()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}") from e
 
-    # Extract event details
-    action = payload.get("action", "unknown")
-    marketplace_purchase = payload.get("marketplace_purchase", {})
-    account = marketplace_purchase.get("account", {})
-    plan = marketplace_purchase.get("plan", {})
-    sender = payload.get("sender", {})
+    logger.info("Marketplace event: %s", payload)
 
-    logger.info(
-        "Marketplace event received: action=%s, account=%s (id=%s, type=%s), plan=%s, sender=%s",
-        action,
-        account.get("login", "unknown"),
-        account.get("id", "unknown"),
-        account.get("type", "unknown"),
-        plan.get("name", "unknown"),
-        sender.get("login", "unknown"),
-    )
-
-    # Log full payload at debug level for troubleshooting
-    logger.debug("Marketplace payload: %s", payload)
-
-    return {"status": "received", "action": action}
+    return {"status": "received"}
 
 
 @router.post("/github")
