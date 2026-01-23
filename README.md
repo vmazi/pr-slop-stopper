@@ -165,27 +165,53 @@ PR Slop Stopper runs as a containerized FastAPI application behind a Caddy rever
 
 ```
 Internet -> Caddy (TLS) -> shared_network -> pr-slop-stopper:8000
+                                          -> stop-pr-slop-landing:7920
 ```
+
+### Related Repositories
+
+| Repository | Description |
+|------------|-------------|
+| [stop-pr-slop-landing](https://github.com/vmazi/stop-pr-slop-landing) | Landing page with features, heuristics info, and configuration guide |
 
 ### Container Deployment
 
+Both the API server and landing page are defined in `podman-compose.yml`.
+
 ```bash
-# Build the container
+# 1. Build the API container
 ./build.sh
 
-# Or manually
-podman build -t pr-slop-stopper -f Containerfile .
+# 2. Build the landing page container
+git clone https://github.com/vmazi/stop-pr-slop-landing.git ../stop-pr-slop-landing
+cd ../stop-pr-slop-landing
+./build.sh
+cd ../pr-slop-stopper
 
-# Create podman secrets (one-time setup)
+# 3. Create podman secrets (one-time setup)
 echo "your_app_id" | podman secret create GITHUB_APP_ID -
 cat /path/to/private-key.pem | podman secret create GITHUB_PRIVATE_KEY -
 echo "your_webhook_secret" | podman secret create GITHUB_WEBHOOK_SECRET -
 
-# Run with podman-compose
+# 4. Run both services with podman-compose
 podman-compose up -d
 ```
 
-The container joins `shared_network` to be accessible from Caddy. Secrets are injected as environment variables using podman's secret management.
+The containers join `shared_network` to be accessible from Caddy:
+- **pr-slop-stopper:8000** - API server (webhook endpoint)
+- **stop-pr-slop-landing:7920** - Landing page
+
+Example Caddyfile entries:
+
+```
+api.slop.example.com {
+    reverse_proxy pr-slop-stopper:8000
+}
+
+slop.example.com {
+    reverse_proxy stop-pr-slop-landing:7920
+}
+```
 
 ## Documentation
 

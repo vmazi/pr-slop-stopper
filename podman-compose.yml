@@ -43,3 +43,21 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  stop-pr-slop-landing:
+    image: stop-pr-slop-landing:latest
+    container_name: stop-pr-slop-landing
+    restart: unless-stopped
+    networks:
+      - shared
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7920"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
