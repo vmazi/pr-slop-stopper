@@ -24,8 +24,12 @@ class Settings(BaseSettings):
 
     @property
     def private_key(self) -> str:
-        """Return private key with trailing whitespace stripped."""
-        return self.github_private_key.strip()
+        """Return private key with only trailing whitespace stripped.
+
+        PEM files require internal newlines for proper formatting.
+        Only strip trailing newlines added by podman secrets.
+        """
+        return self.github_private_key.rstrip()
 
     # Scoring thresholds
     warning_threshold: int = -10
