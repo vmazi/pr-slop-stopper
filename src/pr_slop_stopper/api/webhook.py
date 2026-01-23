@@ -164,6 +164,56 @@ def should_skip_user(
     return False
 
 
+@router.post("/marketplace")
+async def marketplace_webhook(
+    request: Request,
+    x_hub_signature_256: str | None = Header(None),
+    x_github_event: str | None = Header(None),
+) -> dict[str, str]:
+    """Handle GitHub Marketplace webhook events.
+
+    Logs marketplace events for monitoring app installations and subscription changes.
+    """
+    from pr_slop_stopper.config import get_settings
+
+    settings = get_settings()
+
+    # Read raw body for signature verification
+    body = await request.body()
+
+    # Verify signature
+    if not verify_signature(body, x_hub_signature_256 or "", settings.github_webhook_secret):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    # Parse payload
+    try:
+        payload = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}") from e
+
+    # Extract event details
+    action = payload.get("action", "unknown")
+    marketplace_purchase = payload.get("marketplace_purchase", {})
+    account = marketplace_purchase.get("account", {})
+    plan = marketplace_purchase.get("plan", {})
+    sender = payload.get("sender", {})
+
+    logger.info(
+        "Marketplace event received: action=%s, account=%s (id=%s, type=%s), plan=%s, sender=%s",
+        action,
+        account.get("login", "unknown"),
+        account.get("id", "unknown"),
+        account.get("type", "unknown"),
+        plan.get("name", "unknown"),
+        sender.get("login", "unknown"),
+    )
+
+    # Log full payload at debug level for troubleshooting
+    logger.debug("Marketplace payload: %s", payload)
+
+    return {"status": "received", "action": action}
+
+
 @router.post("/github")
 async def github_webhook(
     request: Request,
