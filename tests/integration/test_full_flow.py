@@ -36,7 +36,9 @@ class TestFullFlow:
         settings = MagicMock()
         settings.github_app_id = 12345
         settings.github_private_key = "fake-private-key"
+        settings.private_key = "fake-private-key"
         settings.github_webhook_secret = webhook_secret
+        settings.webhook_secret = webhook_secret
         return settings
 
     def _make_signature(self, payload_bytes: bytes, secret: str) -> str:

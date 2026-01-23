@@ -104,8 +104,10 @@ class TestWebhookEndpoint:
         """Test that invalid signature returns 401."""
         mock_settings.return_value = MagicMock(
             github_webhook_secret=self.webhook_secret,
+            webhook_secret=self.webhook_secret,
             github_app_id=12345,
             github_private_key="fake-key",
+            private_key="fake-key",
         )
 
         response = client.post(
@@ -125,8 +127,10 @@ class TestWebhookEndpoint:
         """Test that non-PR events are ignored."""
         mock_settings.return_value = MagicMock(
             github_webhook_secret=self.webhook_secret,
+            webhook_secret=self.webhook_secret,
             github_app_id=12345,
             github_private_key="fake-key",
+            private_key="fake-key",
         )
 
         payload_bytes = json.dumps(self.valid_payload).encode()
@@ -151,8 +155,10 @@ class TestWebhookEndpoint:
         """Test that non-opened actions are ignored."""
         mock_settings.return_value = MagicMock(
             github_webhook_secret=self.webhook_secret,
+            webhook_secret=self.webhook_secret,
             github_app_id=12345,
             github_private_key="fake-key",
+            private_key="fake-key",
         )
 
         payload = {**self.valid_payload, "action": "closed"}
@@ -178,8 +184,10 @@ class TestWebhookEndpoint:
         """Test that valid PR opened event returns 200 and queues processing."""
         mock_settings.return_value = MagicMock(
             github_webhook_secret=self.webhook_secret,
+            webhook_secret=self.webhook_secret,
             github_app_id=12345,
             github_private_key="fake-key",
+            private_key="fake-key",
         )
 
         payload_bytes = json.dumps(self.valid_payload).encode()

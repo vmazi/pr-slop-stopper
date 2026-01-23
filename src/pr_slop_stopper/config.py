@@ -17,6 +17,16 @@ class Settings(BaseSettings):
     github_private_key: str
     github_webhook_secret: str
 
+    @property
+    def webhook_secret(self) -> str:
+        """Return webhook secret with whitespace stripped."""
+        return self.github_webhook_secret.strip()
+
+    @property
+    def private_key(self) -> str:
+        """Return private key with trailing whitespace stripped."""
+        return self.github_private_key.strip()
+
     # Scoring thresholds
     warning_threshold: int = -10
     close_threshold: int = -25

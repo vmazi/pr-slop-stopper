@@ -180,8 +180,16 @@ async def marketplace_webhook(
     # Read raw body for signature verification
     body = await request.body()
 
+    # Debug logging for signature verification
+    logger.info(
+        "Marketplace webhook received: signature_header=%s, body_length=%d",
+        (x_hub_signature_256[:20] + "...") if x_hub_signature_256 else "None",
+        len(body),
+    )
+
     # Verify signature
-    if not verify_signature(body, x_hub_signature_256 or "", settings.github_webhook_secret):
+    if not verify_signature(body, x_hub_signature_256 or "", settings.webhook_secret):
+        logger.warning("Marketplace webhook signature verification failed")
         raise HTTPException(status_code=401, detail="Invalid signature")
 
     # Parse and log payload
@@ -215,7 +223,7 @@ async def github_webhook(
     body = await request.body()
 
     # Verify signature
-    if not verify_signature(body, x_hub_signature_256 or "", settings.github_webhook_secret):
+    if not verify_signature(body, x_hub_signature_256 or "", settings.webhook_secret):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
     # Parse payload
@@ -243,7 +251,7 @@ async def github_webhook(
         process_pull_request,
         payload,
         settings.github_app_id,
-        settings.github_private_key,
+        settings.private_key,
     )
 
     return {"status": "accepted", "pr": payload.number}
