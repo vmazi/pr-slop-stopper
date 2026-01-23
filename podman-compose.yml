@@ -15,9 +15,7 @@ secrets:
 
 services:
   pr-slop-stopper:
-    build:
-      context: .
-      dockerfile: Containerfile
+    image: pr-slop-stopper:latest
     container_name: pr-slop-stopper
     restart: unless-stopped
     networks:
