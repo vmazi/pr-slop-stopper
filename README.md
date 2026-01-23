@@ -2,6 +2,8 @@
 
 A GitHub App that combats AI-generated spam pull requests by analyzing contributor reputation using heuristic-based scoring.
 
+Install to your repo via https://github.com/apps/pr-slop-stopper
+
 ## The Problem
 
 Open source organizations are increasingly inundated with low-quality, LLM-generated pull requests that:
