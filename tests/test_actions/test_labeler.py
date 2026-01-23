@@ -3,8 +3,10 @@
 from unittest.mock import MagicMock
 
 from pr_slop_stopper.actions.labeler import (
+    PASSED_LABEL_COLOR,
     SPAM_LABEL_COLOR,
     WARNING_LABEL_COLOR,
+    add_passed_label,
     add_spam_label,
     add_warning_label,
     ensure_label_exists,
@@ -131,8 +133,55 @@ class TestAddSpamLabel:
         mock_client.add_label.assert_called_once_with("owner/repo", 456, "spam-detected")
 
 
+class TestAddPassedLabel:
+    """Tests for add_passed_label function."""
+
+    def test_adds_passed_label(self) -> None:
+        """Test that passed label is added to PR."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.get_label.return_value = MagicMock()  # Label exists
+        mock_client.get_repository.return_value = mock_repo
+
+        add_passed_label(mock_client, "owner/repo", 789)
+
+        mock_client.add_label.assert_called_once_with(
+            "owner/repo", 789, "pr-slop-stopper: passed-checks"
+        )
+
+    def test_creates_label_if_missing(self) -> None:
+        """Test that passed label is created if it doesn't exist."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.get_label.side_effect = Exception("Not found")
+        mock_client.get_repository.return_value = mock_repo
+
+        add_passed_label(mock_client, "owner/repo", 789)
+
+        # Should try to create the label
+        mock_repo.create_label.assert_called_once()
+        create_call = mock_repo.create_label.call_args
+        assert create_call[1]["name"] == "pr-slop-stopper: passed-checks"
+        assert create_call[1]["color"] == PASSED_LABEL_COLOR
+
+    def test_custom_label_name(self) -> None:
+        """Test that custom label names are supported."""
+        mock_client = MagicMock()
+        mock_repo = MagicMock()
+        mock_repo.get_label.return_value = MagicMock()
+        mock_client.get_repository.return_value = mock_repo
+
+        add_passed_label(mock_client, "owner/repo", 789, label_name="verified")
+
+        mock_client.add_label.assert_called_once_with("owner/repo", 789, "verified")
+
+
 class TestLabelColors:
     """Tests for label color constants."""
+
+    def test_passed_label_color_is_green(self) -> None:
+        """Test passed label has green color."""
+        assert PASSED_LABEL_COLOR == "0e8a16"
 
     def test_warning_label_color_is_yellow(self) -> None:
         """Test warning label has yellow color."""

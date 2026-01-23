@@ -7,6 +7,7 @@ from pr_slop_stopper.types import GitHubClientProtocol, GitHubRepositoryProtocol
 logger = logging.getLogger(__name__)
 
 # Label colors (GitHub hex without #)
+PASSED_LABEL_COLOR = "0e8a16"  # Green
 WARNING_LABEL_COLOR = "fbca04"  # Yellow
 SPAM_LABEL_COLOR = "d93f0b"  # Red
 
@@ -97,3 +98,32 @@ def add_spam_label(
     # Add label to PR
     client.add_label(repo_full_name, pr_number, label_name)
     logger.info("Added spam label to PR #%d", pr_number)
+
+
+def add_passed_label(
+    client: GitHubClientProtocol,
+    repo_full_name: str,
+    pr_number: int,
+    label_name: str = "pr-slop-stopper: passed-checks",
+) -> None:
+    """Add passed-checks label to a pull request.
+
+    Args:
+        client: GitHubClient instance
+        repo_full_name: Repository full name (owner/repo)
+        pr_number: Pull request number
+        label_name: Name of the passed label
+    """
+    repo = client.get_repository(repo_full_name)
+
+    # Ensure label exists
+    ensure_label_exists(
+        repo,
+        label_name,
+        PASSED_LABEL_COLOR,
+        "PR author passed reputation checks",
+    )
+
+    # Add label to PR
+    client.add_label(repo_full_name, pr_number, label_name)
+    logger.info("Added passed-checks label to PR #%d", pr_number)

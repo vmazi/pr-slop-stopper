@@ -29,12 +29,12 @@ class TestExecuteAction:
     """Tests for execute_action function."""
 
     @pytest.mark.asyncio
-    async def test_allow_does_nothing(
+    async def test_allow_adds_passed_label_by_default(
         self,
         mock_client: MagicMock,
         default_config: RepoConfig,
     ) -> None:
-        """Test that 'allow' recommendation does nothing."""
+        """Test that 'allow' recommendation adds passed label by default."""
         result = ScoringResult(
             total_score=10,
             clamped_score=10,
@@ -43,18 +43,46 @@ class TestExecuteAction:
             recommendation="allow",
         )
 
-        with patch("pr_slop_stopper.actions.executor.add_warning_label") as mock_label:
-            with patch("pr_slop_stopper.actions.executor.post_comment") as mock_comment:
-                await execute_action(
-                    mock_client,
-                    "owner/repo",
-                    1,
-                    result,
-                    default_config,
-                )
+        with patch("pr_slop_stopper.actions.executor.add_passed_label") as mock_passed:
+            with patch("pr_slop_stopper.actions.executor.add_warning_label") as mock_warn:
+                with patch("pr_slop_stopper.actions.executor.post_comment") as mock_comment:
+                    await execute_action(
+                        mock_client,
+                        "owner/repo",
+                        1,
+                        result,
+                        default_config,
+                    )
 
-        mock_label.assert_not_called()
+        mock_passed.assert_called_once()
+        mock_warn.assert_not_called()
         mock_comment.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_allow_respects_add_passed_label_false(
+        self,
+        mock_client: MagicMock,
+    ) -> None:
+        """Test that add_passed_label=False disables passed label."""
+        config = RepoConfig(add_passed_label=False)
+        result = ScoringResult(
+            total_score=10,
+            clamped_score=10,
+            breakdown={},
+            heuristic_results=[],
+            recommendation="allow",
+        )
+
+        with patch("pr_slop_stopper.actions.executor.add_passed_label") as mock_passed:
+            await execute_action(
+                mock_client,
+                "owner/repo",
+                1,
+                result,
+                config,
+            )
+
+        mock_passed.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_warn_adds_label_and_comment(

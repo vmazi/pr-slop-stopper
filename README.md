@@ -67,12 +67,14 @@ heuristics:
 
 # Action settings
 actions:
-  add_label: true      # Add labels to flagged PRs
-  add_comment: true    # Add explanation comment
-  auto_close: false    # Auto-close PRs at close threshold (disabled by default)
+  add_label: true         # Add labels to flagged PRs
+  add_comment: true       # Add explanation comment
+  auto_close: false       # Auto-close PRs at close threshold (disabled by default)
+  add_passed_label: true  # Add label when PR passes checks (default: on)
 
 # Custom label names (optional)
 labels:
+  passed: "pr-slop-stopper: passed-checks"
   warning: "pr-slop-stopper: warning"
   spam: "pr-slop-stopper: likely-spam"
 ```

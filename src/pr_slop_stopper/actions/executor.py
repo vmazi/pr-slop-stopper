@@ -3,7 +3,11 @@
 import logging
 
 from pr_slop_stopper.actions.commenter import post_comment
-from pr_slop_stopper.actions.labeler import add_spam_label, add_warning_label
+from pr_slop_stopper.actions.labeler import (
+    add_passed_label,
+    add_spam_label,
+    add_warning_label,
+)
 from pr_slop_stopper.core.repo_config import RepoConfig
 from pr_slop_stopper.core.scorer import ScoringResult
 from pr_slop_stopper.types import GitHubClientProtocol
@@ -33,6 +37,13 @@ async def execute_action(
 
     if result.recommendation == "allow":
         logger.info("PR #%d allowed (score: %d)", pr_number, result.clamped_score)
+
+        if config.add_passed_label:
+            try:
+                add_passed_label(client, repo_full_name, pr_number, config.passed_label)
+            except Exception:
+                logger.exception("Failed to add passed label to PR #%d", pr_number)
+
         return
 
     if result.recommendation == "warn":

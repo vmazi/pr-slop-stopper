@@ -30,10 +30,12 @@ class RepoConfig:
     add_label: bool = True
     add_comment: bool = True
     auto_close: bool = False  # Disabled by default for safety
+    add_passed_label: bool = True  # Add label when PR passes checks
 
     # Label names
     warning_label: str = "pr-slop-stopper: warning"
     spam_label: str = "pr-slop-stopper: likely-spam"
+    passed_label: str = "pr-slop-stopper: passed-checks"
 
 
 def parse_repo_config(content: str) -> RepoConfig:
@@ -63,8 +65,10 @@ def parse_repo_config(content: str) -> RepoConfig:
         add_label=data.get("add_label", True),
         add_comment=data.get("add_comment", True),
         auto_close=data.get("auto_close", False),
+        add_passed_label=data.get("add_passed_label", True),
         warning_label=data.get("warning_label", "pr-slop-stopper: warning"),
         spam_label=data.get("spam_label", "pr-slop-stopper: likely-spam"),
+        passed_label=data.get("passed_label", "pr-slop-stopper: passed-checks"),
     )
 
 
