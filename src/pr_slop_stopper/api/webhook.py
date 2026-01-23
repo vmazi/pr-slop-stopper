@@ -100,6 +100,7 @@ async def process_pull_request(
         result = scorer.calculate_score(
             user,  # type: ignore[arg-type]  # PyGithub types satisfy GitHubUserProtocol
             enabled_heuristics=config.enabled_heuristics,
+            github_client=client.client,
         )
 
         logger.info(

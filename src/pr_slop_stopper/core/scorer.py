@@ -3,9 +3,13 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pr_slop_stopper.core.heuristics import HeuristicResult, registry
 from pr_slop_stopper.types import GitHubUserProtocol
+
+if TYPE_CHECKING:
+    from github import Github
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,7 @@ class ReputationScorer:
         *,
         enabled_heuristics: list[str] | None = None,
         reference_date: datetime | None = None,
+        github_client: "Github | None" = None,
     ) -> ScoringResult:
         """Calculate reputation score for a user.
 
@@ -68,6 +73,7 @@ class ReputationScorer:
             user: GitHub user object (NamedUser or AuthenticatedUser)
             enabled_heuristics: Optional list of heuristic names to use
             reference_date: Optional reference date for calculations
+            github_client: GitHub client for API calls (required for some heuristics)
 
         Returns:
             ScoringResult with total score and breakdown
@@ -78,6 +84,7 @@ class ReputationScorer:
             user,
             enabled=enabled_heuristics,
             reference_date=reference_date,
+            github_client=github_client,
         )
 
         total_score = sum(r.score for r in results)

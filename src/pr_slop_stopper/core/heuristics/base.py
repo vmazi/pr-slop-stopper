@@ -4,8 +4,12 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pr_slop_stopper.types import GitHubUserProtocol
+
+if TYPE_CHECKING:
+    from github import Github
 
 logger = logging.getLogger(__name__)
 
@@ -38,12 +42,14 @@ class BaseHeuristic(ABC):
         user: GitHubUserProtocol,
         *,
         reference_date: datetime | None = None,
+        github_client: "Github | None" = None,
     ) -> HeuristicResult:
         """Evaluate the heuristic for a user.
 
         Args:
             user: GitHub user object (NamedUser or AuthenticatedUser)
             reference_date: Optional reference date for calculations
+            github_client: GitHub client for API calls (required for some heuristics)
 
         Returns:
             HeuristicResult with score and breakdown
@@ -79,6 +85,7 @@ class HeuristicRegistry:
         enabled: list[str] | None = None,
         *,
         reference_date: datetime | None = None,
+        github_client: "Github | None" = None,
     ) -> list[HeuristicResult]:
         """Evaluate all (or specified) heuristics for a user.
 
@@ -86,6 +93,7 @@ class HeuristicRegistry:
             user: GitHub user object (NamedUser or AuthenticatedUser)
             enabled: Optional list of heuristic names to evaluate (default: all)
             reference_date: Optional reference date for calculations
+            github_client: GitHub client for API calls (required for some heuristics)
 
         Returns:
             List of HeuristicResult objects
@@ -94,7 +102,11 @@ class HeuristicRegistry:
         heuristics = self.all() if enabled is None else [h for h in self.all() if h.name in enabled]
         for heuristic in heuristics:
             logger.info("Evaluating heuristic: %s", heuristic.name)
-            result = heuristic.evaluate(user, reference_date=reference_date)
+            result = heuristic.evaluate(
+                user,
+                reference_date=reference_date,
+                github_client=github_client,
+            )
             logger.info(
                 "Heuristic %s: score=%d, details=%s",
                 result.name,
