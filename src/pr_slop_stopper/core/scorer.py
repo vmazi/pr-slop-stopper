@@ -1,10 +1,13 @@
 """Reputation scoring engine."""
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from pr_slop_stopper.core.heuristics import HeuristicResult, registry
 from pr_slop_stopper.types import GitHubUserProtocol
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -69,6 +72,8 @@ class ReputationScorer:
         Returns:
             ScoringResult with total score and breakdown
         """
+        logger.info("Starting reputation scoring for user: %s", user.login)
+
         results = registry.evaluate_all(
             user,
             enabled=enabled_heuristics,
@@ -87,6 +92,15 @@ class ReputationScorer:
             recommendation = "warn"
         else:
             recommendation = "allow"
+
+        logger.info(
+            "Scoring complete for %s: total=%d, clamped=%d, recommendation=%s",
+            user.login,
+            total_score,
+            clamped_score,
+            recommendation,
+        )
+        logger.info("Score breakdown: %s", breakdown)
 
         return ScoringResult(
             total_score=total_score,

@@ -1,9 +1,22 @@
 """FastAPI application entry point."""
 
+import logging
+import sys
+
 from fastapi import FastAPI
 
 from pr_slop_stopper.api.health import router as health_router
 from pr_slop_stopper.api.webhook import router as webhook_router
+
+# Configure logging for pr_slop_stopper modules
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
+# Set log level for our application modules
+logging.getLogger("pr_slop_stopper").setLevel(logging.INFO)
 
 app = FastAPI(
     title="PR Slop Stopper",

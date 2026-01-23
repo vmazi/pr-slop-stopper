@@ -1,10 +1,13 @@
 """Base classes for heuristic implementations."""
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from pr_slop_stopper.types import GitHubUserProtocol
+
+logger = logging.getLogger(__name__)
 
 # Type alias for details values
 DetailValue = str | int | float | bool | None | list[str]
@@ -90,7 +93,15 @@ class HeuristicRegistry:
         results = []
         heuristics = self.all() if enabled is None else [h for h in self.all() if h.name in enabled]
         for heuristic in heuristics:
-            results.append(heuristic.evaluate(user, reference_date=reference_date))
+            logger.info("Evaluating heuristic: %s", heuristic.name)
+            result = heuristic.evaluate(user, reference_date=reference_date)
+            logger.info(
+                "Heuristic %s: score=%d, details=%s",
+                result.name,
+                result.score,
+                result.details,
+            )
+            results.append(result)
         return results
 
 
