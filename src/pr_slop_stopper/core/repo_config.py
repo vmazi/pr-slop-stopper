@@ -92,9 +92,23 @@ def load_repo_config(client: GitHubClientProtocol, repo_full_name: str) -> RepoC
             return RepoConfig()
 
         content = contents.decoded_content.decode("utf-8")
-        return parse_repo_config(content)
+        config = parse_repo_config(content)
+        logger.info(
+            "Loaded repo config from %s: warn=%d, close=%d, whitelist=%s",
+            repo_full_name,
+            config.warning_threshold,
+            config.close_threshold,
+            config.whitelist,
+        )
+        return config
 
     except Exception as e:
         # File doesn't exist or other error - use defaults
-        logger.debug("Could not load repo config from %s: %s", repo_full_name, e)
+        logger.info(
+            "No config file found in %s, using defaults (warn=%d, close=%d): %s",
+            repo_full_name,
+            -10,
+            -25,
+            str(e),
+        )
         return RepoConfig()
